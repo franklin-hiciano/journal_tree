@@ -599,24 +599,27 @@
                 <div class="micro">$29 · one-time · lifetime access</div>
 
                 <div class="video-wrap" id="demo">
+                    <script src="https://player.vimeo.com/api/player.js"></script>
+
                     <div class="video-frame">
-                        <video id="pitch-video" controls poster="video-poster.jpg">
-                            <source src="pitch.mp4" type="video/mp4" />
-                        </video>
+                        <iframe
+                            id="pitch-video"
+                            src="https://player.vimeo.com/video/1204235305?title=0&byline=0&portrait=0&color=e0793f"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowfullscreen
+                        ></iframe>
                     </div>
                 </div>
+                <script src="https://player.vimeo.com/api/player.js"></script>
                 <script>
                     (function () {
-                        var v = document.getElementById("pitch-video");
-                        if (!v) return;
+                        var iframe = document.getElementById("pitch-video");
+                        if (!iframe || !window.Vimeo) return;
+                        var v = new Vimeo.Player(iframe);
                         var SPEED = 1.2;
-                        v.defaultPlaybackRate = SPEED;
-                        v.playbackRate = SPEED;
-                        v.addEventListener("loadedmetadata", function () {
-                            v.playbackRate = SPEED;
-                        });
-                        v.addEventListener("play", function () {
-                            v.playbackRate = SPEED;
+                        v.setPlaybackRate(SPEED).catch(function () {});
+                        v.on("play", function () {
+                            v.setPlaybackRate(SPEED).catch(function () {});
                         });
                     })();
                 </script>
