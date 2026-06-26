@@ -136,10 +136,11 @@
                                 spellcheck="false"
                                 autocomplete="off"
                                 placeholder="What stood out about today?
-  >> done"
+  >> commit"
                             ></textarea>
                         </div>
                     </div>
+                    <button class="history-btn" onclick="openHistory()" title="version history">⟲ history</button>
                 </div>
                 <div class="edit-canvas-wrap" id="editCanvasWrap">
                     <svg id="editCanvas" xmlns="http://www.w3.org/2000/svg">
@@ -149,12 +150,12 @@
                         <div class="c-empty-t">empty framework</div>
                         <div class="c-empty-s">
                             a node is a line. indent its answers under it. every
-                            path must end with <b>&gt;&gt; done</b>.
+                            path must end with <b>&gt;&gt; commit</b>.
                         </div>
                         <pre
                             class="c-empty-eg"
                         ><span class="eg-q">What stood out about today?</span>
-  <span class="eg-a">&gt;&gt; done</span>                  <span class="eg-c"># free response → the commitment</span>
+  <span class="eg-a">&gt;&gt; commit</span>                <span class="eg-c"># free response → the commitment</span>
 
 <span class="eg-q">Did you do the work?</span>
   <span class="eg-o">yes &gt;&gt; What made it work?</span>     <span class="eg-c"># a choice needs 2+ routed options</span>
@@ -162,7 +163,7 @@
 
 <span class="eg-q">What made it work?</span>
   <span class="eg-r">@[Did you do the work?] [1,7d]</span>  <span class="eg-c"># recall your past answers, 1–7d back</span>
-  <span class="eg-a">&gt;&gt; done</span></pre>
+  <span class="eg-a">&gt;&gt; commit</span></pre>
                         <div class="c-empty-s">
                             then press <b>reflect ▶</b> (top right) to run it.
                         </div>
@@ -396,6 +397,15 @@
                     skip for now →
                 </button>
             </div>
+        </div>
+
+        <!-- VERSION HISTORY PANEL -->
+        <div class="history-panel" id="historyPanel" style="display:none">
+            <div class="history-header">
+                <span>version history</span>
+                <button class="history-close" onclick="closeHistory()">✕</button>
+            </div>
+            <div class="history-list" id="historyList"></div>
         </div>
 
         <!-- FIRST-RUN: WHAT THIS APP IS ACTUALLY FOR (shown once) -->

@@ -205,11 +205,18 @@ async function ensureDefaultFramework() {
       },
       { merge: true },
     );
-    await setDoc(
-      tDoc("default", "meta", "source"),
-      { source: STARTER_SRC, updatedAt: serverTimestamp() },
-      { merge: true },
-    );
+    // CRITICAL: only seed the starter source if the user has NO source yet.
+    // Using {merge:true} still overwrites the 'source' field — so we must
+    // check first and bail out if there's already content. This was the root
+    // cause of data loss (a transient empty-trees snapshot triggered this and
+    // overwrote whatever the user had written).
+    const srcSnap = await getDoc(tDoc("default", "meta", "source"));
+    if (!srcSnap.exists() || !srcSnap.data().source) {
+      await setDoc(tDoc("default", "meta", "source"), {
+        source: STARTER_SRC,
+        updatedAt: serverTimestamp(),
+      });
+    }
   } catch (e) {
     console.error("ensureDefaultFramework:", e);
   }
@@ -332,6 +339,9 @@ window._subscribeTree = function (treeId) {
 
 window._writeSrc = function (treeId, src) {
   if (!uid) return;
+  // Guard: never write an empty source — this would silently erase the user's
+  // tree if called during initialisation before the textarea is populated.
+  if (!src || !src.trim()) return;
   clearTimeout(srcTimers[treeId]);
   setSyncDot("syncing");
   srcTimers[treeId] = setTimeout(async () => {
@@ -341,10 +351,28 @@ window._writeSrc = function (treeId, src) {
         updatedAt: serverTimestamp(),
       });
       setSyncDot("ok");
+      // Save a local snapshot for version history (last 10)
+      try {
+        const hKey = "rc_history_" + treeId;
+        const hist = JSON.parse(localStorage.getItem(hKey) || "[]");
+        // Don't add a duplicate of the most-recent snapshot
+        if (!hist.length || hist[0].src !== src) {
+          hist.unshift({ src, ts: Date.now() });
+          localStorage.setItem(hKey, JSON.stringify(hist.slice(0, 10)));
+        }
+      } catch (_) {}
     } catch (e) {
       setSyncDot("err");
     }
   }, 1200);
+};
+
+window._getHistory = function (treeId) {
+  try {
+    return JSON.parse(localStorage.getItem("rc_history_" + treeId) || "[]");
+  } catch (_) {
+    return [];
+  }
 };
 
 window._createTree = async function (name) {

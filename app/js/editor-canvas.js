@@ -40,8 +40,8 @@ function parse(src){
         const m=tr.match(/^@\[([^\]]+)\]\s*\[\s*(\d+)\s*,\s*(\d+)\s*d\s*\]/);
         if(m)refs.push({nodeId:m[1].trim(),a:+m[2],b:+m[3],line:i});else bad.push({line:i,msg:'malformed recall — use @[Node Title] [3,7d]'});
       }else if(tr.startsWith('@')){bad.push({line:i,msg:'unknown directive — @ is reserved for @[Node Title] [a,bd] recall'});}
-      else if(tr.startsWith('>>')){def=tr.slice(2).trim();}
-      else if(tr.includes('>>')){const idx=tr.indexOf('>>');opts.push({l:tr.slice(0,idx).trim(),n:tr.slice(idx+2).trim()});}
+      else if(tr.startsWith('>>')){let d=tr.slice(2).trim();if(d==='commit')d='done';def=d;}
+      else if(tr.includes('>>')){const idx=tr.indexOf('>>');let n=tr.slice(idx+2).trim();if(n==='commit')n='done';opts.push({l:tr.slice(0,idx).trim(),n});}
       else{opts.push({l:tr,n:null});}
     }
   });
@@ -73,7 +73,7 @@ function lint(src,nodes,nl){
     const succ={};keys.forEach(id=>{const n=nodes[id];const d=[];n.opts.forEach(o=>{if(o.n)d.push(o.n);});if(n.def)d.push(n.def);succ[id]=d;});
     const reaches=new Set(['done']);let changed=true;
     while(changed){changed=false;for(const id of keys){if(reaches.has(id))continue;if((succ[id]||[]).some(d=>reaches.has(d))){reaches.add(id);changed=true;}}}
-    keys.forEach(id=>{if(!reaches.has(id))errors.push({sev:'err',msg:`"${id}": no path from here reaches the commitment — end a path with ">> done"`,line:nl[id]?.s});});
+    keys.forEach(id=>{if(!reaches.has(id))errors.push({sev:'err',msg:`"${id}": no path from here reaches the commitment — end a path with ">> commit"`,line:nl[id]?.s});});
   }
   return errors;
 }
@@ -99,8 +99,8 @@ function hilite(src){
     const ws=(line.match(/^(\s+)/)||[''])[0];
     if(tr.startsWith('@['))return esc(ws)+'<span class="h-ref">'+esc(tr)+'</span>';
     if(tr.startsWith('@'))return esc(ws)+'<span class="h-bad">'+esc(tr)+'</span>';
-    if(tr.startsWith('>>'))return esc(ws)+'<span class="h-arrow">&gt;&gt;</span> <span class="h-dest">'+esc(tr.slice(2).trim())+'</span>';
-    if(tr.includes('>>')){const i=tr.indexOf('>>');return esc(ws)+'<span class="h-opt">'+esc(tr.slice(0,i).trimEnd())+'</span> <span class="h-arrow">&gt;&gt;</span> <span class="h-dest">'+esc(tr.slice(i+2).trim())+'</span>';}
+    if(tr.startsWith('>>')){const d=tr.slice(2).trim();return esc(ws)+'<span class="h-arrow">&gt;&gt;</span> <span class="h-dest">'+(d==='done'||d==='commit'?'commit':esc(d))+'</span>';}
+    if(tr.includes('>>')){const i=tr.indexOf('>>');const d=tr.slice(i+2).trim();return esc(ws)+'<span class="h-opt">'+esc(tr.slice(0,i).trimEnd())+'</span> <span class="h-arrow">&gt;&gt;</span> <span class="h-dest">'+(d==='done'||d==='commit'?'commit':esc(d))+'</span>';}
     return esc(ws)+'<span class="h-opt">'+esc(tr)+'</span>';
   }).join('\n');
 }
@@ -322,6 +322,34 @@ function bindEditorEvents(){
 function onCursor(){const t=ta();if(!t)return;const li=t.value.slice(0,t.selectionStart).split('\n').length-1;for(const[id,r]of Object.entries(nlines)){if(li>=r.s&&li<=r.e){if(id!==selNode){selNode=id;showLHL(r);renderEditCanvas();}return;}}}
 function showLHL(r){const l=lhl();if(!l)return;if(!r){l.style.display='none';return;}const t=ta();if(!t)return;l.style.display='block';l.style.top=(PAD+r.s*LH-t.scrollTop)+'px';l.style.height=((r.e-r.s+1)*LH)+'px';}
 function scrollToNode(id){const r=nlines[id];const t=ta();if(!r||!t)return;t.scrollTop=Math.max(0,PAD+r.s*LH-80);showLHL(r);}
+
+// ── Version history panel ──
+function openHistory(){
+  const panel=document.getElementById('historyPanel');if(!panel)return;
+  renderHistory();panel.style.display='';
+}
+function closeHistory(){
+  const panel=document.getElementById('historyPanel');if(panel)panel.style.display='none';
+}
+function renderHistory(){
+  const list=document.getElementById('historyList');if(!list)return;
+  const hist=(window._getHistory&&_activeTreeId)?window._getHistory(_activeTreeId):[];
+  if(!hist.length){list.innerHTML='<div class="hist-empty">no history yet — edits auto-save here.</div>';return;}
+  list.innerHTML=hist.map((h,i)=>{
+    const d=new Date(h.ts);
+    const lbl=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const preview=h.src.split('\n').find(l=>l.trim())||'(empty)';
+    return `<div class="hist-item" onclick="restoreHistory(${i})"><div class="hist-ts">${lbl}</div><div class="hist-prev">${esc(preview.slice(0,50))}</div></div>`;
+  }).join('');
+}
+function restoreHistory(idx){
+  const hist=(window._getHistory&&_activeTreeId)?window._getHistory(_activeTreeId):[];
+  if(!hist[idx])return;
+  const t=ta();if(!t)return;
+  if(!confirm('Restore this version? Your current text will be replaced.'))return;
+  t.value=hist[idx].src;window._onSrcChange&&window._onSrcChange(true);
+  closeHistory();
+}
 
 window._onSrcChange=function(write=true){
   const t=ta();const src=t?t.value:'';

@@ -14,7 +14,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Cabin:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Cabin:wght@400;500;600&family=DM+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap"
             rel="stylesheet"
         />
         <style>
@@ -37,6 +37,7 @@
                 --fh: "Syne", sans-serif;
                 --fs: "Cabin", Georgia, serif;
                 --fm: "DM Mono", ui-monospace, monospace;
+                --fprompt: "Source Serif 4", Georgia, serif;
             }
             * {
                 box-sizing: border-box;
@@ -516,8 +517,8 @@
                 margin-bottom: 16px;
             }
             .dr-prompt {
-                font-family: var(--fh);
-                font-weight: 700;
+                font-family: var(--fprompt);
+                font-weight: 600;
                 font-size: 22px;
                 line-height: 1.35;
                 color: var(--text);
@@ -757,9 +758,9 @@
                     <em>you'd never ask yourself.</em>
                 </h1>
                 <p class="sub">
-                    It isn't journaling. You design a tree of prompts that pull
-                    the truth out of you each night — then commit to something small.
-                    And we'll make sure you do it.
+                    Most reflection apps hand you a blank page and a cursor. This one is different: you write down what you value, as a series of questions, and every night it interrogates your future self with them.
+
+
                 </p>
                 <div class="cta-row">
                     <a
@@ -769,7 +770,7 @@
                     >
                     <a class="btn btn-ghost" href="#demo">Watch the demo</a>
                 </div>
-                <div class="micro">$29 · one-time · lifetime access</div>
+                <div class="micro">$29 · lifetime</div>
 
                 <div class="video-wrap" id="demo">
                     <script src="https://player.vimeo.com/api/player.js"></script>
@@ -833,28 +834,50 @@
                         </div>
                     </div>
                     <div class="dr-end" id="drEnd" style="display: none">
-                        <div class="dr-meta">COMMITMENT</div>
-                        <div class="dr-end-h">commit to one move</div>
-                        <div class="dr-end-sub">
-                            One thing you'll make real. The day after, a clean
-                            yes or no.
+                        <!-- step 1: write the commitment -->
+                        <div id="drEndInput">
+                            <div class="dr-meta">COMMITMENT</div>
+                            <div class="dr-end-h">commit to one move</div>
+                            <div class="dr-end-sub">
+                                One thing you'll make real. The day after, a clean yes or no.
+                            </div>
+                            <div class="dr-input-wrap">
+                                <input
+                                    class="dr-input"
+                                    id="drCommit"
+                                    type="text"
+                                    placeholder="I will…"
+                                    autocomplete="off"
+                                    oninput="drCommitInput()"
+                                    onkeydown="if(event.key==='Enter')demoCommit()"
+                                />
+                                <div class="dr-input-line"></div>
+                            </div>
+                            <div style="margin-top: 20px">
+                                <button
+                                    class="btn btn-primary"
+                                    id="drCommitBtn"
+                                    onclick="demoCommit()"
+                                    disabled
+                                    style="opacity:0.45;cursor:not-allowed;width:100%"
+                                >commit →</button>
+                            </div>
                         </div>
-                        <div class="dr-input-wrap">
-                            <input
-                                class="dr-input"
-                                id="drCommit"
-                                type="text"
-                                placeholder="I will…"
-                                autocomplete="off"
-                            />
-                            <div class="dr-input-line"></div>
-                        </div>
-                        <div style="margin-top: 20px">
-                            <a
-                                class="btn btn-primary"
-                                href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
-                                >get the real thing →</a
-                            >
+                        <!-- step 2: committed — now get the real thing -->
+                        <div id="drEndConfirm" style="display:none">
+                            <div class="dr-meta" style="color:#7fae6f">COMMITTED ✓</div>
+                            <div class="dr-end-h" id="drCommittedText" style="color:var(--text)"></div>
+                            <div class="dr-end-sub" style="margin-top:10px">
+                                Now track it for real — the app checks in with you the day after.
+                            </div>
+                            <div style="margin-top: 24px">
+                                <a
+                                    class="btn btn-primary"
+                                    href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
+                                    style="width:100%;display:block;text-align:center"
+                                    >get the full app →</a
+                                >
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1197,6 +1220,15 @@ done
             function initDemo() {
                 demoState = mpParse(DEMO_SRC);
                 demoState.cur = demoState.first;
+                // reset commit screen to step 1
+                var ei = document.getElementById("drEndInput");
+                var ec = document.getElementById("drEndConfirm");
+                if (ei) ei.style.display = "";
+                if (ec) ec.style.display = "none";
+                var dc = document.getElementById("drCommit");
+                if (dc) dc.value = "";
+                var btn = document.getElementById("drCommitBtn");
+                if (btn) { btn.disabled = true; btn.style.opacity = "0.45"; btn.style.cursor = "not-allowed"; }
                 demoRender();
             }
             function demoRender() {
@@ -1245,6 +1277,21 @@ done
                         .join("");
                 }
             }
+            function drCommitInput() {
+                var v = document.getElementById("drCommit").value.trim();
+                var btn = document.getElementById("drCommitBtn");
+                if (!btn) return;
+                btn.disabled = !v;
+                btn.style.opacity = v ? "1" : "0.45";
+                btn.style.cursor = v ? "pointer" : "not-allowed";
+            }
+            function demoCommit() {
+                var v = document.getElementById("drCommit").value.trim();
+                if (!v) return;
+                document.getElementById("drEndInput").style.display = "none";
+                document.getElementById("drCommittedText").textContent = v;
+                document.getElementById("drEndConfirm").style.display = "";
+            }
             function demoNext() {
                 if (
                     !demoState ||
@@ -1281,7 +1328,7 @@ done
                     ch = document.getElementById("edrChoices"),
                     end = document.getElementById("edrEnd");
                 if (!s || !s.cur || s.cur === "__done__") {
-                    if (ep) ep.textContent = "done.";
+                    if (ep) ep.textContent = "commit.";
                     if (iw) iw.style.display = "none";
                     if (ch) ch.innerHTML = "";
                     if (end) end.style.display = "";
