@@ -3,27 +3,15 @@ let currentRun=null;     // { runId, steps:[{nodeId,answer,next}], complete }
 let tnode=null;
 let _runSaveTimer=null;
 let multiSel=new Set();
+let _commitSourceNode=null;   // node the user credits for this commitment (turns it gold)
 
 function currentRunId(){return currentRun?currentRun.runId:null;}
 function firstNode(){return Object.keys(parsedTree)[0]||null;}
 function totalNodes(){return Object.keys(parsedTree).length;}
 
-// ── reflect entry, gated by the linter (only surfaces errors when you try to run) ──
+// ── reflect entry — just check that the tree has at least one node ──
 function attemptReflect(){
-  const t=document.getElementById('src-ta');
-  const src=t?t.value:(_activeSrc||'');
-  const{nodes,nl}=parse(src);
-  if(!Object.keys(nodes).length)return;            // nothing to run
-  const all=lint(src,nodes,nl);
-  const errs=all.filter(e=>e.sev==='err');
-  if(errs.length){
-    // reveal the red marks + bottom error list, and don't run
-    window._lintShown=true;
-    window._errLines=new Set(all.filter(e=>e.line!=null&&e.sev==='err').map(e=>e.line));
-    if(typeof renderLinter==='function')renderLinter(all);
-    if(typeof updateEditor==='function')updateEditor();
-    return;
-  }
+  if(!Object.keys(parsedTree).length)return;
   startReflection();
 }
 
@@ -64,11 +52,14 @@ function renderCard(){
 }
 function setProgress(frac){const p=document.getElementById('reflectProg');if(p)p.style.width=Math.max(0,Math.min(1,frac))*100+'%';}
 function buildRecall(node){
-  if(!node||!node.refs||!node.refs.length)return'';
+  if(!node||!node.title)return'';
+  const map=window._recallMap||{};
+  const sources=map[node.title];
+  if(!sources||!sources.length)return'';
   let html='';
-  node.refs.forEach(ref=>{
-    const past=getPastAnswers(ref.nodeId,ref.a,ref.b);
-    html+='<div class="recall"><div class="recall-hd">↩ you, '+ref.a+'–'+ref.b+'d ago · '+esc(ref.nodeId)+'</div>';
+  sources.forEach(sourceId=>{
+    const past=getPastAnswers(sourceId,1,7);
+    html+='<div class="recall"><div class="recall-hd">↩ you, 1–7d ago · '+esc(sourceId)+'</div>';
     if(!past.length)html+='<div class="recall-empty">nothing in this window</div>';
     else past.forEach(p=>{const dd=p.date?new Date(p.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';html+='<div class="recall-row"><span class="recall-date">'+esc(dd)+'</span><span class="recall-txt">'+esc(p.text.slice(0,160))+'</span></div>';});
     html+='</div>';
@@ -142,8 +133,53 @@ function showEndScreen(){
   const cd=document.getElementById('commitDate');if(cd)cd.value='';
   const en=document.getElementById('endNotes');if(en)en.style.display='none';
   const nt=document.getElementById('endNotesText');if(nt)nt.value=window._notes||'';
+  _commitSourceNode=null;
+  const pop=document.getElementById('commitNodePop');if(pop)pop.style.display='none';
+  const nb=document.getElementById('commitNodeBtn');if(nb)nb.classList.remove('on');
   refreshEndCommit();
   setTimeout(()=>{const c=document.getElementById('commitText');if(c)c.focus();},80);
+}
+
+// ── "which question led you here?" — credit a node, which turns its response gold ──
+function commitRunNodes(){
+  if(!currentRun)return[];
+  const seen=new Set(),out=[];
+  currentRun.steps.forEach(s=>{if(s.nodeId&&!seen.has(s.nodeId)){seen.add(s.nodeId);out.push(s.nodeId);}});
+  return out;
+}
+function branchCountOf(id){
+  const n=parsedTree[id];if(!n)return 0;
+  if(n.type==='single')return n.opts.length;
+  return(n.def&&n.def!=='done')?1:0;
+}
+function commitCountOf(id){return(window._commitments||[]).filter(c=>c.sourceNode===id).length;}
+function toggleCommitNodePop(){
+  const pop=document.getElementById('commitNodePop');if(!pop)return;
+  if(pop.style.display!=='none'){pop.style.display='none';return;}
+  renderCommitNodePop();pop.style.display='';
+}
+function renderCommitNodePop(){
+  const pop=document.getElementById('commitNodePop');if(!pop)return;
+  const ids=commitRunNodes();
+  if(!ids.length){pop.innerHTML='<div class="cnp-empty">no path to credit yet</div>';return;}
+  let html='<div class="cnp-h">which question led you here?</div>';
+  ids.forEach((id,i)=>{
+    const rc=branchCountOf(id),cc=commitCountOf(id),meta=[];
+    if(rc)meta.push(rc+(rc===1?' reply':' replies'));            // hide when no replies
+    if(cc)meta.push(cc+(cc===1?' commitment':' commitments'));   // hide when no commitments
+    const sel=(_commitSourceNode===id)?' sel':'';
+    html+='<button class="cnp-item'+sel+'" onclick="pickCommitNode('+i+')">'
+        +'<span class="cnp-txt">'+esc(id)+'</span>'
+        +(meta.length?'<span class="cnp-meta">'+esc(meta.join('  ·  '))+'</span>':'')
+        +'</button>';
+  });
+  pop.innerHTML=html;
+}
+function pickCommitNode(i){
+  const ids=commitRunNodes();const id=ids[i];if(id==null)return;
+  _commitSourceNode=(_commitSourceNode===id)?null:id;
+  renderCommitNodePop();
+  const btn=document.getElementById('commitNodeBtn');if(btn)btn.classList.toggle('on',!!_commitSourceNode);
 }
 function refreshEndCommit(){
   const ct=document.getElementById('commitText');const b=document.getElementById('endCommitGo');
@@ -152,7 +188,7 @@ function refreshEndCommit(){
 function endCommit(){
   const text=document.getElementById('commitText').value.trim();
   if(!text||!_commitDateVal)return;
-  if(window._addCommitment)window._addCommitment(text,_commitDateVal);
+  if(window._addCommitment)window._addCommitment(text,_commitDateVal,_commitSourceNode);
   exitReflection();
   // teach "reflections compound" right after someone lands their first real commitment —
   // not before they've used the app at all. _maybeShowCompoundCard no-ops after night one.

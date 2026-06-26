@@ -61,20 +61,18 @@ async function showNotif(title,opts){
   catch(e){return false;}
 }
 
-// fire the confirmation notification (also used as "test")
+// fire the confirmation notification (also used as “test”)
 async function sendTestNotif(){
   if(!_hasNotif){refreshNotifUI();return;}
   let perm=Notification.permission;
   if(perm!=='granted'){try{perm=await Notification.requestPermission();}catch(e){perm='denied';}}
   if(perm!=='granted'){refreshNotifUI();return;}
-  const ok=await showNotif('Reflect & Commit',{
-    body:'Tap “Yes, keep them on” to finish — or tap this notification.',
-    tag:'rc-confirm',requireInteraction:true,
-    actions:[{action:'yes',title:'Yes, keep them on'}]
+  await showNotif('Reflect & Commit',{
+    body:'Tap this notification to confirm.',
+    tag:'rc-confirm',requireInteraction:true
+    // no action buttons — tapping the notification body is the confirmation
   });
-  // surface a hint if the OS swallowed it (Focus mode, browser notifications off, file://)
-  const np=document.getElementById('npStatus');
-  if(np&&ok)np.textContent='sent — check your notifications, then tap it to confirm';
+  localStorage.setItem('notif_test_sent','1');
   refreshNotifUI();
 }
 
@@ -83,7 +81,34 @@ function confirmReminders(){
   localStorage.setItem('notif_confirmed','1');
   localStorage.setItem('notif_enabled','1');
   scheduleNotif();
-  refreshNotifUI();
+  showBannerPhase2();
+}
+
+function showBannerPhase2(){
+  const status=document.getElementById('notiBannerStatus');
+  const btn=document.getElementById('notiBannerBtn');
+  const loud=document.getElementById('notiBannerLoud');
+  const dismiss=document.getElementById('notiBannerDismiss');
+  const time=document.getElementById('notiBannerTime');
+  const done=document.getElementById('notiBannerDone');
+  if(status)status.textContent='All set! What time each day?';
+  if(btn)btn.style.display='none';
+  if(loud)loud.style.display='none';
+  if(dismiss)dismiss.style.display='none';
+  if(time){time.style.display='';time.value=notifTime();}
+  if(done)done.style.display='';
+}
+
+function onBannerTimeChange(){
+  const t=document.getElementById('notiBannerTime');
+  if(t)setNotifTime(t.value);
+}
+
+function onBannerDone(){
+  const t=document.getElementById('notiBannerTime');
+  if(t)setNotifTime(t.value);
+  scheduleNotif();
+  dismissNotiBanner();
 }
 
 // ── top banner ──
@@ -100,18 +125,19 @@ function checkNotiBanner(){
   if(show)updateNotiBanner();
 }
 function updateNotiBanner(){
-  const status=document.getElementById('notiBannerStatus');
-  const btn=document.getElementById('notiBannerBtn');
-  const time=document.getElementById('notiBannerTime');
-  if(time)time.value=notifTime();
-  const perm=_hasNotif?Notification.permission:'unsupported';
-  let msg='Get a daily nudge to reflect.',label='turn on';
-  if(!_hasNotif)msg='Notifications aren’t supported in this browser.';
-  else if(!window.isSecureContext)msg='Open this app via http://localhost or https to enable reminders.';
-  else if(perm==='denied'){msg='Reminders are blocked — allow notifications in your browser, then tap test.';label='retry';}
-  else if(perm==='granted')msg='Tap the notification we send you to confirm reminders work.';
-  if(status)status.textContent=msg;
-  if(btn){btn.textContent=label;btn.onclick=sendTestNotif;}
+  const status=document.getElementById(‘notiBannerStatus’);
+  const btn=document.getElementById(‘notiBannerBtn’);
+  if(!status||!btn)return;
+  const perm=_hasNotif?Notification.permission:’unsupported’;
+  const testSent=localStorage.getItem(‘notif_test_sent’)===’1’;
+  let msg=’Get a daily nudge to reflect.’, label=’turn on’;
+  if(!_hasNotif){msg=’Notifications aren\’t supported in this browser.’;}
+  else if(!window.isSecureContext){msg=’Open via http://localhost or https to enable reminders.’;}
+  else if(perm===’denied’){msg=’Reminders are blocked — allow notifications in your browser settings.’;label=’retry’;}
+  else if(testSent&&perm===’granted’){msg=’Tap the notification to confirm.’;label=’send again’;}
+  status.textContent=msg;
+  btn.textContent=label;
+  btn.onclick=sendTestNotif;
 }
 function dismissNotiBanner(){
   localStorage.setItem('notif_dismiss','1');

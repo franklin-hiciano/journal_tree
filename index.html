@@ -231,7 +231,7 @@
                 padding: 70px 0;
             }
             .sec-tag {
-                font-family: var(--fm);
+                font-family: var(--fs);
                 font-size: 12px;
                 letter-spacing: 0.18em;
                 text-transform: uppercase;
@@ -369,7 +369,7 @@
                 padding: 6px 0 6px 24px;
             }
             .cascade .lead-in {
-                font-family: var(--fm);
+                font-family: var();
                 font-size: 12px;
                 letter-spacing: 0.14em;
                 text-transform: uppercase;
@@ -747,30 +747,21 @@
         <div class="wrap">
             <header>
                 <div class="brand">Reflect <b>&amp;</b> Commit</div>
-                <a class="nav-cta" href="/app/">Open the app →</a>
             </header>
 
             <!-- HERO -->
             <section class="hero" style="padding-top: 48px">
                 <div class="kicker">Reflect &amp; Commit</div>
-                <h1>
-                    Build a machine that asks you the questions
-                    <em>you'd never ask yourself.</em>
-                </h1>
-                <p class="sub">
-                    Most reflection apps hand you a blank page and a cursor. This one is different: you write down what you value, as a series of questions, and every night it interrogates your future self with them.
+                <h1>The <em>fast and effective</em> way to journal.</h1>
 
-
-                </p>
                 <div class="cta-row">
                     <a
                         class="btn btn-primary"
-                        href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
-                        >Start reflecting</a
+                        href="/app/"
+                        >Get started — free</a
                     >
                     <a class="btn btn-ghost" href="#demo">Watch the demo</a>
                 </div>
-                <div class="micro">$29 · lifetime</div>
 
                 <div class="video-wrap" id="demo">
                     <script src="https://player.vimeo.com/api/player.js"></script>
@@ -798,7 +789,6 @@
                     })();
                 </script>
             </section>
-
 
             <!-- TRY MY TREE -->
             <section id="try-tree">
@@ -839,7 +829,8 @@
                             <div class="dr-meta">COMMITMENT</div>
                             <div class="dr-end-h">commit to one move</div>
                             <div class="dr-end-sub">
-                                One thing you'll make real. The day after, a clean yes or no.
+                                One thing you'll make real. The day after, a
+                                clean yes or no.
                             </div>
                             <div class="dr-input-wrap">
                                 <input
@@ -849,7 +840,9 @@
                                     placeholder="I will…"
                                     autocomplete="off"
                                     oninput="drCommitInput()"
-                                    onkeydown="if(event.key==='Enter')demoCommit()"
+                                    onkeydown="
+                                        if (event.key === 'Enter') demoCommit();
+                                    "
                                 />
                                 <div class="dr-input-line"></div>
                             </div>
@@ -859,22 +852,39 @@
                                     id="drCommitBtn"
                                     onclick="demoCommit()"
                                     disabled
-                                    style="opacity:0.45;cursor:not-allowed;width:100%"
-                                >commit →</button>
+                                    style="
+                                        opacity: 0.45;
+                                        cursor: not-allowed;
+                                        width: 100%;
+                                    "
+                                >
+                                    commit →
+                                </button>
                             </div>
                         </div>
                         <!-- step 2: committed — now get the real thing -->
-                        <div id="drEndConfirm" style="display:none">
-                            <div class="dr-meta" style="color:#7fae6f">COMMITTED ✓</div>
-                            <div class="dr-end-h" id="drCommittedText" style="color:var(--text)"></div>
-                            <div class="dr-end-sub" style="margin-top:10px">
-                                Now track it for real — the app checks in with you the day after.
+                        <div id="drEndConfirm" style="display: none">
+                            <div class="dr-meta" style="color: #7fae6f">
+                                COMMITTED ✓
+                            </div>
+                            <div
+                                class="dr-end-h"
+                                id="drCommittedText"
+                                style="color: var(--text)"
+                            ></div>
+                            <div class="dr-end-sub" style="margin-top: 10px">
+                                Now track it for real — the app checks in with
+                                you the day after.
                             </div>
                             <div style="margin-top: 24px">
                                 <a
                                     class="btn btn-primary"
-                                    href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
-                                    style="width:100%;display:block;text-align:center"
+                                    href="/app/"
+                                    style="
+                                        width: 100%;
+                                        display: block;
+                                        text-align: center;
+                                    "
                                     >get the full app →</a
                                 >
                             </div>
@@ -945,7 +955,7 @@ done
                                 </div>
                                 <a
                                     class="btn btn-primary"
-                                    href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
+                                    href="/app/"
                                     >get the full app →</a
                                 >
                             </div>
@@ -1035,10 +1045,11 @@ done
                         <p>
                             Go to bed with plans to lock-in on homework
                             tomorrow. Wake up a bit late, eat lunch and shower.
-                            Do some homework, unfocused after an hour. Go outside
-                            with mom, stay an extra hour (because why not).
-                            Get home. Wait till later to get some work done, lose focus again.
-                            Watch TV, go to bed. Say I'll finish the work tomorrow.
+                            Do some homework, unfocused after an hour. Go
+                            outside with mom, stay an extra hour (because why
+                            not). Get home. Wait till later to get some work
+                            done, lose focus again. Watch TV, go to bed. Say
+                            I'll finish the work tomorrow.
                         </p>
                     </div>
                     <div class="col with">
@@ -1046,15 +1057,15 @@ done
                             An actual day after 2-3 weeks of self-observation
                         </div>
                         <p>
-                            Make a plan for tomorrow, make hard decisions, go to sleep.
-                            Step out of bed and start work instantly, knowing
-                            I'd get distracted otherwise. Fix a situation with
-                            a customer for my ebay business. Get
-                            hungry but go run before eating (knowing I'd get too
-                            lethargic to run). Difficult conversation with my parents
-                            about skipping college (decided the night
-                            before). Keep coding this app and
-                            run some ads. Reflect again, go to bed.
+                            Make a plan for tomorrow, make hard decisions, go to
+                            sleep. Step out of bed and start work instantly,
+                            knowing I'd get distracted otherwise. Fix a
+                            situation with a customer for my ebay business. Get
+                            hungry but go run before eating, knowing I'd get too
+                            lethargic to run. Difficult conversation with my
+                            parents about skipping college, decided the night
+                            before. Keep coding this app and run some ads.
+                            Reflect again, go to bed.
                         </p>
                     </div>
                 </div>
@@ -1062,45 +1073,21 @@ done
                 <div class="cascade">
                     <div class="lead-in">That same day, traced forward</div>
                     <p>
-                        Those ads ban me from TikTok
-                        <span class="arw">→</span> struggle to find a new
-                        product <span class="arw">→</span> reflecting, realize I
-                        can also sell this app <span class="arw">→</span> pull
-                        an all nighter to polish my prototype
-                        <span class="arw">→</span> sales during my graduation
-                        rehearsal <span class="arw">→</span>
+                        ads get me banned from TikTok
+                        <span class="arw">→</span> find a new product
+                        <span class="arw">→</span> realize I can also sell this
+                        app <span class="arw">→</span> pull an all nighter to
+                        polish my prototype <span class="arw">→</span> 5 sales
+                        during my graduation rehearsal
+                        <span class="arw">→</span>
                         launch this product page and video tutorials
                         <span class="arw">→</span> show my extended family
                         <span class="arw">→</span> they think I'm "legit"
-                        <span class="arw">→</span> they agree to support me and
-                        fund my dream of making it without college
+                        <span class="arw">→</span> agree to fund my business and
+                        support my dream of not entering college
                     </p>
                 </div>
             </section>
-
-            <!-- TUTORIAL VIDEO -->
-            <section id="tutorial">
-                <div class="sec-tag">Tutorial</div>
-                <h2 class="sec-h">
-                    How to design your tree
-                </h2>
-                <p class="sec-lead">
-                    A short guide on designing prompts that pull the truth out
-                    of you — not just surface-level reflection.
-                </p>
-                <div class="video-wrap" style="margin-top: 32px">
-                    <div class="video-frame">
-                        <!-- replace this placeholder with your Vimeo iframe when ready:
-                        <iframe src="https://player.vimeo.com/video/YOUR_ID?title=0&byline=0&portrait=0&color=e0793f" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                        -->
-                        <div class="video-ph">
-                            <div class="play-dot"></div>
-                            <span>coming soon</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
 
             <!-- PROOF -->
             <section>
@@ -1130,33 +1117,38 @@ done
                 </div>
             </section>
 
+            <!-- TUTORIAL VIDEO -->
+            <section id="tutorial">
+                <div class="sec-tag">Tutorial</div>
+                <h2 class="sec-h">I'll even help you get started.</h2>
+                <p class="sec-lead">A guide on engineering your own tree.</p>
+                <div class="video-wrap" style="margin-top: 32px">
+                    <div class="video-frame">
+                        <!-- replace this placeholder with your Vimeo iframe when ready:
+                        <iframe src="https://player.vimeo.com/video/YOUR_ID?title=0&byline=0&portrait=0&color=e0793f" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                        -->
+                        <div class="video-ph">
+                            <div class="play-dot"></div>
+                            <span>coming soon</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- PRICING -->
             <section class="pricing">
                 <div class="sec-tag">Get it</div>
-                <h2 class="sec-h">One price. Yours for good.</h2>
+                <h2 class="sec-h">Free forever.</h2>
                 <div class="price-card">
-                    <div class="price-amt">$29 <small>lifetime</small></div>
-                    <div class="price-note">
-                        one-time payment · no subscription
-                    </div>
+                    <div class="price-amt">Free <small>forever</small></div>
                     <div class="price-list">
                         <span>Your own self-interrogation system</span>
-                        <span
-                            ></span
-                        >
-                        <span>Daily reminder to reflect</span>
-                        <span
-                            >Never stare at a blank page/span
-                        >
-                        <span
-                            >Appreciate a list of your kept commitments
-                                </span
-                        >
+                        <span>Track your progress over time</span>
+                        <span>Up to 10 commitments included</span>
                     </div>
                     <a
                         class="btn btn-primary"
-                        href="https://buy.stripe.com/28E14g3ntcCt15dcRt1RC01"
+                        href="/app/"
                         >Start reflecting →</a
                     >
                 </div>
@@ -1228,7 +1220,11 @@ done
                 var dc = document.getElementById("drCommit");
                 if (dc) dc.value = "";
                 var btn = document.getElementById("drCommitBtn");
-                if (btn) { btn.disabled = true; btn.style.opacity = "0.45"; btn.style.cursor = "not-allowed"; }
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.45";
+                    btn.style.cursor = "not-allowed";
+                }
                 demoRender();
             }
             function demoRender() {

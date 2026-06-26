@@ -7,6 +7,9 @@
             content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
         />
         <title>Reflect &amp; Commit</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=DM+Mono:wght@400;500&display=swap" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -19,204 +22,101 @@
                 </div>
                 <button class="btn-google" id="btnSignIn">
                     <svg width="16" height="16" viewBox="0 0 24 24">
-                        <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                        />
-                        <path
-                            fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
                     Continue with Google
                 </button>
                 <div class="auth-note">
-                    Your reflections and commitments are private. Synced across
-                    your devices.
+                    Your reflections and commitments are private. Synced across your devices.
                 </div>
             </div>
         </div>
 
-        <!-- PAYWALL (shown after sign-in when PAY.enabled and the account hasn't paid) -->
+        <!-- PAYWALL -->
         <div class="paywall" id="paywall">
             <div class="auth-box">
                 <div class="auth-logo">Reflect &amp; Commit</div>
                 <div class="pay-price" id="payPrice">$29 · lifetime</div>
-                <div class="auth-sub" id="payBlurb">
-                    Unlock unlimited reflections and commitments.
-                </div>
-                <button class="btn-google pay-btn" id="payBtn">
-                    Unlock with card
-                </button>
-                <button class="pay-alt" onclick="doSignOut()">
-                    use a different account
-                </button>
+                <div class="auth-sub" id="payBlurb">Unlock unlimited reflections and commitments.</div>
+                <button class="btn-google pay-btn" id="payBtn">Unlock with card</button>
+                <button class="pay-alt" onclick="doSignOut()">use a different account</button>
                 <div class="auth-note">Secure checkout powered by Stripe.</div>
             </div>
         </div>
 
         <!-- NOTIFICATION BANNER -->
         <div class="noti-banner" id="notiBanner">
-            <span class="noti-banner-txt" id="notiBannerStatus"
-                >Get a daily nudge to reflect.</span
-            >
-            <input
-                type="time"
-                class="noti-banner-time"
-                id="notiBannerTime"
-                value="20:00"
-            />
+            <!-- phase 1: message + action -->
+            <span class="noti-banner-txt" id="notiBannerStatus">Get a daily nudge to reflect.</span>
             <button class="noti-banner-loud" id="notiBannerLoud" onclick="toggleLoudNotif()" title="loud (vibration + critical alert)">🔔</button>
-            <button class="noti-banner-btn" id="notiBannerBtn">turn on</button>
-            <button
-                class="noti-banner-test"
-                id="notiBannerTest"
-                onclick="sendTestNotif()"
-            >
-                test
-            </button>
-            <button
-                class="noti-banner-x"
-                id="notiBannerDismiss"
-                onclick="dismissNotiBanner()"
-            >
-                don't ask again
-            </button>
+            <button class="noti-banner-btn" id="notiBannerBtn" onclick="sendTestNotif()">turn on</button>
+            <button class="noti-banner-x" id="notiBannerDismiss" onclick="dismissNotiBanner()">don't ask again</button>
+            <!-- phase 2: time picker (shown after notification confirmed) -->
+            <input type="time" class="noti-banner-time" id="notiBannerTime" value="20:00" style="display:none" onchange="onBannerTimeChange()" />
+            <button class="noti-banner-btn" id="notiBannerDone" style="display:none" onclick="onBannerDone()">done</button>
         </div>
 
         <!-- EDITOR (home / default screen) -->
         <div class="editor" id="editor">
             <div class="top-bar">
                 <div class="brand">Reflect &amp; Commit</div>
-                <span style="flex: 1"></span>
+                <span style="flex:1"></span>
+                <button class="reflect-btn" onclick="attemptReflect()" title="reflect">reflect ▶</button>
                 <div class="account">
                     <img class="auth-avatar" id="userAvatar" src="" alt="" />
                     <span class="user-name" id="userName"></span>
-                    <span class="sync-dot" id="syncDot"></span>
                 </div>
-                <button class="sb-mini" onclick="openMilestones()" title="commitments">
-                    ◎
-                </button>
-                <button class="sb-mini" onclick="doSignOut()" title="sign out">
-                    out
-                </button>
-                <button
-                    class="reflect-btn"
-                    onclick="attemptReflect()"
-                    title="reflect"
-                >
-                    reflect ▶
-                </button>
+                <button class="sb-mini" onclick="doSignOut()" title="sign out">out</button>
             </div>
-            <div class="edit-workspace">
+            <div class="edit-workspace" id="editWorkspace">
                 <div class="edit-text" id="editText">
                     <div class="editor-body" id="editorBody">
                         <div class="lnums" id="lnums">1</div>
                         <div class="editor-inner">
-                            <div
-                                class="line-hl"
-                                id="lhl"
-                                style="display: none"
-                            ></div>
-                            <div
-                                class="hl-layer"
-                                id="hll"
-                                aria-hidden="true"
-                            ></div>
+                            <div class="line-hl" id="lhl" style="display:none"></div>
+                            <div class="hl-layer" id="hll" aria-hidden="true"></div>
                             <textarea
                                 id="src-ta"
                                 spellcheck="false"
                                 autocomplete="off"
                                 placeholder="What stood out about today?
-  >> commit"
+  It led to something real
+    Yes — it did
+    No — not quite"
                             ></textarea>
+                            <div class="hover-btns-layer" id="hoverBtnsLayer"></div>
                         </div>
                     </div>
-                    <button class="history-btn" onclick="openHistory()" title="version history">⟲ history</button>
-                </div>
-                <div class="edit-canvas-wrap" id="editCanvasWrap">
-                    <svg id="editCanvas" xmlns="http://www.w3.org/2000/svg">
-                        <g id="editVp"></g>
-                    </svg>
-                    <div class="c-empty" id="cem">
-                        <div class="c-empty-t">empty framework</div>
-                        <div class="c-empty-s">
-                            a node is a line. indent its answers under it. every
-                            path must end with <b>&gt;&gt; commit</b>.
-                        </div>
-                        <pre
-                            class="c-empty-eg"
-                        ><span class="eg-q">What stood out about today?</span>
-  <span class="eg-a">&gt;&gt; commit</span>                <span class="eg-c"># free response → the commitment</span>
-
-<span class="eg-q">Did you do the work?</span>
-  <span class="eg-o">yes &gt;&gt; What made it work?</span>     <span class="eg-c"># a choice needs 2+ routed options</span>
-  <span class="eg-o">no  &gt;&gt; What got in the way?</span>
-
-<span class="eg-q">What made it work?</span>
-  <span class="eg-r">@[Did you do the work?] [1,7d]</span>  <span class="eg-c"># recall your past answers, 1–7d back</span>
-  <span class="eg-a">&gt;&gt; commit</span></pre>
-                        <div class="c-empty-s">
-                            then press <b>reflect ▶</b> (top right) to run it.
-                        </div>
-                    </div>
-                    <div class="zoom-ctrls">
-                        <button
-                            class="zoom-btn"
-                            onclick="editZoom(1.2)"
-                            title="zoom in"
-                        >
-                            +
-                        </button>
-                        <button
-                            class="zoom-btn"
-                            onclick="editZoom(0.8)"
-                            title="zoom out"
-                        >
-                            −
-                        </button>
-                        <button
-                            class="zoom-btn"
-                            onclick="fitEditView()"
-                            title="fit"
-                        >
-                            ⤢
-                        </button>
-                    </div>
+                    <span class="pstatus" id="pst"></span>
                 </div>
             </div>
-            <div
-                class="linter-panel"
-                id="linterPanel"
-                style="display: none"
-            ></div>
         </div>
 
-        <!-- REFLECTION (black card screen, keeps a top bar) -->
+        <!-- BOTTOM-LEFT CLUSTER: undo / redo / history -->
+        <div class="bottom-left-cluster">
+            <button id="btn-undo" onclick="olUndo()" title="undo (⌘Z)">↶</button>
+            <button id="btn-redo" onclick="olRedo()" title="redo (⇧⌘Z)">↷</button>
+            <button onclick="openHistory()" title="version history">⟲</button>
+        </div>
+
+        <!-- REFLECTION SCREEN -->
         <div class="reflect-screen" id="reflectScreen">
             <div class="reflect-top">
                 <span class="brand">Reflect &amp; Commit</span>
                 <span class="reflect-go">▶ reflect</span>
-                <span style="flex: 1"></span>
-                <button class="reflect-return" onclick="finishReflection()">
-                    return
-                </button>
+                <span style="flex:1"></span>
+                <button class="reflect-return" onclick="finishReflection()">return</button>
+                <div class="reflect-prog" id="reflectProg"></div>
             </div>
             <div class="reflect-body">
                 <div class="rcard" id="rcard">
                     <div class="rcard-main" id="rcardMain">
                         <div class="rcard-meta">
-                            <span class="rcard-type" id="rcardType"
-                                >TEXT RESPONSE</span
-                            ><span class="rcard-idx" id="rcardIdx">1 / 1</span>
+                            <span class="rcard-type" id="rcardType">TEXT RESPONSE</span>
+                            <span class="rcard-idx" id="rcardIdx">1 / 1</span>
                         </div>
                         <div class="rcard-recall" id="rcardRecall"></div>
                         <div class="rcard-prompt" id="rcardPrompt"></div>
@@ -233,32 +133,17 @@
                         </div>
                         <div class="rcard-choices" id="rcardChoices"></div>
                         <div class="rcard-nav">
-                            <button
-                                class="rnav-back"
-                                id="rBack"
-                                onclick="runBack()"
-                            >
-                                ‹ back
-                            </button>
-                            <span style="flex: 1"></span>
-                            <button
-                                class="rnav-next"
-                                id="rNext"
-                                onclick="submitCard()"
-                            >
-                                next →
-                            </button>
+                            <button class="rnav-back" id="rBack" onclick="runBack()">‹ back</button>
+                            <span style="flex:1"></span>
+                            <button class="rnav-next" id="rNext" onclick="submitCard()">next →</button>
                         </div>
                     </div>
-                    <div class="rcard-end" id="rcardEnd" style="display: none">
+                    <div class="rcard-end" id="rcardEnd" style="display:none">
                         <div class="rcard-meta">
                             <span class="rcard-type">COMMITMENT</span>
                         </div>
                         <div class="end-h">commit to one move</div>
-                        <div class="end-sub">
-                            One thing you'll make real. The day after, a clean
-                            yes or no.
-                        </div>
+                        <div class="end-sub">One thing you'll make real. The day after, a clean yes or no.</div>
                         <div class="rfield">
                             <input
                                 id="commitText"
@@ -268,85 +153,55 @@
                                 autocomplete="off"
                                 oninput="refreshEndCommit()"
                             />
+                            <button
+                                class="commit-node-btn"
+                                id="commitNodeBtn"
+                                onclick="toggleCommitNodePop()"
+                                title="which question led you here?"
+                            >
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                                    <circle cx="12" cy="5" r="2.4"></circle>
+                                    <circle cx="6" cy="18" r="2.4"></circle>
+                                    <circle cx="18" cy="18" r="2.4"></circle>
+                                    <path d="M12 7.4V11M12 11l-5 4.6M12 11l5 4.6"></path>
+                                </svg>
+                            </button>
                             <span class="rfield-line"></span>
                         </div>
+                        <div class="commit-node-pop" id="commitNodePop" style="display:none"></div>
                         <button
                             class="ritual-date-btn"
                             id="commitDateBtn"
-                            onclick="
-                                document.getElementById('commitDate').showPicker
-                                    ? document
-                                          .getElementById('commitDate')
-                                          .showPicker()
-                                    : document
-                                          .getElementById('commitDate')
-                                          .focus()
-                            "
+                            onclick="document.getElementById('commitDate').showPicker?document.getElementById('commitDate').showPicker():document.getElementById('commitDate').focus()"
                         >
                             <span id="commitDateLabel">add a date</span>
                         </button>
-                        <input
-                            type="date"
-                            id="commitDate"
-                            class="ritual-date-input"
-                            onchange="onDatePicked()"
-                        />
+                        <input type="date" id="commitDate" class="ritual-date-input" onchange="onDatePicked()" />
                         <div class="end-actions">
-                            <button
-                                class="rnav-back"
-                                onclick="endToggleNotes()"
-                            >
-                                just take a note
-                            </button>
-                            <span style="flex: 1"></span>
-                            <button
-                                class="reflect-btn"
-                                id="endCommitGo"
-                                onclick="endCommit()"
-                                disabled
-                            >
-                                commit
-                            </button>
+                            <button class="rnav-back" onclick="endToggleNotes()">just take a note</button>
+                            <span style="flex:1"></span>
+                            <button class="reflect-btn" id="endCommitGo" onclick="endCommit()" disabled>commit</button>
                         </div>
-                        <div
-                            class="end-notes"
-                            id="endNotes"
-                            style="display: none"
-                        >
-                            <div class="end-notes-label">
-                                notes — you don't have to commit to anything.
-                            </div>
-                            <textarea
-                                id="endNotesText"
-                                class="cmt-notes"
-                                placeholder="free notes — anything."
-                                oninput="endNotesInput()"
-                            ></textarea>
+                        <div class="end-notes" id="endNotes" style="display:none">
+                            <div class="end-notes-label">notes — you don't have to commit to anything.</div>
+                            <textarea id="endNotesText" class="cmt-notes" placeholder="free notes — anything." oninput="endNotesInput()"></textarea>
                         </div>
-                        <button
-                            class="end-finish"
-                            id="rBackEnd"
-                            onclick="finishReflection()"
-                        >
-                            finish without committing
-                        </button>
+                        <button class="end-finish" id="rBackEnd" onclick="finishReflection()">finish without committing</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- MILESTONES SCREEN (completed + current commitments) -->
+        <!-- MILESTONES -->
         <div class="milestones-ov" id="milestonesOv">
             <div class="milestones-top">
                 <div class="milestones-title">commitments</div>
                 <button class="milestones-close" onclick="closeMilestones()">✕</button>
             </div>
-            <div class="milestones-body" id="milestonesBody">
-                <!-- rendered by renderMilestones() -->
-            </div>
+            <div class="milestones-body" id="milestonesBody"></div>
         </div>
 
-        <!-- MINTED ANIMATION OVERLAY (plays when commitment turns done) -->
+        <!-- MINTED ANIMATION -->
         <div class="minted-ov" id="mintedOv">
             <div class="minted-rainbow"></div>
             <div class="minted-card" id="mintedCard">
@@ -361,41 +216,25 @@
                 <div class="ritual-sub">the day after</div>
                 <div class="ritual-enact-text" id="checkinText"></div>
                 <div class="ritual-actions col">
-                    <button class="hold-btn ok" data-action="yes">
-                        <span class="hold-fill"></span
-                        ><span class="hold-label">hold · yes</span>
-                    </button>
-                    <button class="hold-btn bad" data-action="no">
-                        <span class="hold-fill"></span
-                        ><span class="hold-label">hold · no</span>
-                    </button>
+                    <button class="hold-btn ok" data-action="yes"><span class="hold-fill"></span><span class="hold-label">hold · yes</span></button>
+                    <button class="hold-btn bad" data-action="no"><span class="hold-fill"></span><span class="hold-label">hold · no</span></button>
                 </div>
             </div>
         </div>
 
-        <!-- INTRO VIDEO OVERLAY (shown once on first entry, after auth) -->
+        <!-- INTRO VIDEO OVERLAY -->
         <div class="intro-video-ov" id="introVideoOv">
             <div class="intro-video-inner">
                 <div class="intro-video-label">before you start</div>
                 <div class="intro-video-title">How to design a question that works.</div>
                 <div class="intro-video-frame">
-                    <!-- swap YOUR_VIDEO_ID once the video is ready -->
                     <div class="intro-video-ph" id="introVideoPh">
                         <div class="intro-play-dot"></div>
                         <span>video coming soon</span>
                     </div>
-                    <iframe
-                        id="introVideoFrame"
-                        class="intro-video-iframe"
-                        src=""
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        allowfullscreen
-                        style="display:none"
-                    ></iframe>
+                    <iframe id="introVideoFrame" class="intro-video-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="display:none"></iframe>
                 </div>
-                <button class="intro-video-skip" onclick="window._dismissIntroVideo()">
-                    skip for now →
-                </button>
+                <button class="intro-video-skip" onclick="window._dismissIntroVideo()">skip for now →</button>
             </div>
         </div>
 
@@ -408,77 +247,47 @@
             <div class="history-list" id="historyList"></div>
         </div>
 
-        <!-- FIRST-RUN: WHAT THIS APP IS ACTUALLY FOR (shown once) -->
+        <!-- FIRST-RUN COMPOUND CARD -->
         <div class="compound-card" id="compoundCard">
             <div class="cc-inner">
                 <div class="cc-kicker">how this works</div>
-                <div class="cc-title">
-                    Most forks don't matter. A few change everything.
-                </div>
+                <div class="cc-title">Most forks don't matter. A few change everything.</div>
                 <svg class="cc-graph" viewBox="0 0 320 200" aria-hidden="true">
-                    <line x1="20" y1="18" x2="20" y2="180" class="cc-axis" />
-                    <line x1="20" y1="180" x2="306" y2="180" class="cc-axis" />
-                    <!-- the path you've walked so far -->
-                    <path
-                        d="M20,178 L130,108"
-                        class="cc-axis"
-                        stroke-width="2"
-                    />
-                    <circle cx="130" cy="108" r="3.5" class="cc-fork-dot" />
-                    <text
-                        x="130"
-                        y="98"
-                        text-anchor="middle"
-                        class="cc-flatlbl"
-                    >
-                        today
-                    </text>
-                    <!-- forks that barely move you -->
-                    <path d="M130,108 L300,120" class="cc-flat" />
-                    <path d="M130,108 L300,108" class="cc-flat" />
-                    <path d="M130,108 L300,96" class="cc-flat" />
-                    <text x="298" y="136" text-anchor="end" class="cc-flatlbl">
-                        forks that barely move you
-                    </text>
-                    <!-- the fork that changes everything -->
-                    <path
-                        id="ccCurve"
-                        d="M130,108 C200,104 250,76 300,22"
-                        class="cc-curve"
-                    />
+                    <line x1="20" y1="18" x2="20" y2="180" class="cc-axis"/>
+                    <line x1="20" y1="180" x2="306" y2="180" class="cc-axis"/>
+                    <path d="M20,178 L130,108" class="cc-axis" stroke-width="2"/>
+                    <circle cx="130" cy="108" r="3.5" class="cc-fork-dot"/>
+                    <text x="130" y="98" text-anchor="middle" class="cc-flatlbl">today</text>
+                    <path d="M130,108 L300,120" class="cc-flat"/>
+                    <path d="M130,108 L300,108" class="cc-flat"/>
+                    <path d="M130,108 L300,96" class="cc-flat"/>
+                    <text x="298" y="136" text-anchor="end" class="cc-flatlbl">forks that barely move you</text>
+                    <path id="ccCurve" d="M130,108 C200,104 250,76 300,22" class="cc-curve"/>
                     <circle r="5" class="cc-dot">
-                        <animateMotion
-                            dur="3.4s"
-                            repeatCount="indefinite"
-                            keyPoints="0;1"
-                            keyTimes="0;1"
-                            calcMode="spline"
-                            keySplines="0.45 0 1 1"
-                        >
-                            <mpath href="#ccCurve" />
+                        <animateMotion dur="3.4s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.45 0 1 1">
+                            <mpath href="#ccCurve"/>
                         </animateMotion>
                     </circle>
-                    <text x="300" y="16" text-anchor="end" class="cc-ylbl">
-                        changes everything
-                    </text>
+                    <text x="300" y="16" text-anchor="end" class="cc-ylbl">changes everything</text>
                 </svg>
                 <div class="cc-body">
-                    Every night you're choosing what to spend the question on.
-                    Most calls — which task first, whether to skip the gym —
-                    barely move you; do them a hundred different ways and you
-                    land in roughly the same place. A few — quitting something,
-                    starting the hard thing, telling someone the truth — send
-                    you somewhere completely different. The tree's job is to
-                    help you tell those two apart, on the night they're actually
-                    in front of you.
+                    Every night you're choosing what to spend the question on. Most calls — which task first, whether to skip the gym — barely move you; do them a hundred different ways and you land in roughly the same place. A few — quitting something, starting the hard thing, telling someone the truth — send you somewhere completely different. The tree's job is to help you tell those two apart, on the night they're actually in front of you.
                 </div>
                 <div class="cc-rule">
-                    <span class="cc-iff">the bet&nbsp;⟺</span> make more of the
-                    forks that change everything, fewer of the ones that don't
+                    <span class="cc-iff">the bet&nbsp;⟺</span> make more of the forks that change everything, fewer of the ones that don't
                 </div>
-                <button class="cc-go" onclick="window._dismissCompoundCard()">
-                    got it
-                </button>
+                <button class="cc-go" onclick="window._dismissCompoundCard()">got it</button>
+            </div>
+        </div>
+
+        <!-- UPGRADE OVERLAY -->
+        <div class="upgrade-ov" id="upgradeOv">
+            <div class="auth-box">
+                <div class="auth-logo">Reflect &amp; Commit</div>
+                <div class="pay-price">$99 <small style="font-size:16px;font-weight:600;color:var(--muted2)">/yr</small></div>
+                <div class="auth-sub">You've made 10 commitments — unlock unlimited to keep going.</div>
+                <button class="btn-google pay-btn" onclick="window.open(window._upgradeUrl,'_blank')">Upgrade to continue</button>
+                <button class="pay-alt" onclick="document.getElementById('upgradeOv').classList.remove('on')">maybe later</button>
             </div>
         </div>
 
@@ -486,6 +295,7 @@
         <script type="module" src="firebase-init.js"></script>
         <script src="js/screens.js"></script>
         <script src="js/editor-canvas.js"></script>
+        <script src="js/outline.js"></script>
         <script src="js/run-engine.js"></script>
         <script src="js/outcomes-settings.js"></script>
         <script src="js/onboarding.js"></script>

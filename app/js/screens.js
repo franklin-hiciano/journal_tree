@@ -69,12 +69,13 @@ function bindHolds(){
 }
 function onHoldComplete(action){
   if(action==='yes'){
-    // grab text before resolving so we can show it in the minted animation
     const cmt=(window._commitments||[]).find(c=>c.id===_activeCmtId);
     window._resolveCommitment(_activeCmtId,'done');
     shatter(document.getElementById('checkinOv'));
     playMinted(cmt?cmt.text:'');
     _activeCmtId=null;
+    // after minted fades, show completed commitments
+    setTimeout(()=>openMilestones(), 1650);
   }
   else if(action==='no'){window._resolveCommitment(_activeCmtId,'missed');shatter(document.getElementById('checkinOv'));_activeCmtId=null;}
 }
@@ -90,15 +91,16 @@ function playMinted(text){
 }
 
 // ── milestones screen ──
-function openMilestones(){
+function openMilestones() {
   renderMilestones();
-  const ov=document.getElementById('milestonesOv');
-  if(ov)ov.classList.add('on');
+  const ov = document.getElementById('milestonesOv');
+  if (ov) ov.classList.add('on');
 }
-function closeMilestones(){
-  const ov=document.getElementById('milestonesOv');
-  if(ov)ov.classList.remove('on');
+function closeMilestones() {
+  const ov = document.getElementById('milestonesOv');
+  if (ov) ov.classList.remove('on');
 }
+
 function renderMilestones(){
   const body=document.getElementById('milestonesBody');
   if(!body)return;
@@ -138,3 +140,4 @@ function renderMilestones(){
     el.style.width='fit-content';
   });
 }
+

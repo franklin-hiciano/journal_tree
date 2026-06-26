@@ -56,18 +56,17 @@ window.doSignOut = async () => {
 };
 document.getElementById("btnSignIn").addEventListener("click", window.doSignIn);
 
-// ── STRIPE PAYWALL ────────────────────────────────────────────────────────────────
-// To turn it on: create a Payment Link in your Stripe dashboard, set its success URL to
-// this app's URL with ?paid=1 appended, paste the link below, and set enabled:true.
-// NOTE: this is a soft, client-side gate (fine for selling to a few trusted people).
-// Anyone who reads the page source can bypass it. For real enforcement, deploy the
-// Stripe webhook (Cloud Function) that sets users/{uid}/state/account.paid = true and
-// add a Firestore rule so the client can't set 'paid' itself. Ask me for that code.
+// ── UPGRADE PAYWALL (commitment limit only — app is free to use) ──────────────────
+// Free users get FREE_COMMITMENT_LIMIT commitments. The 11th triggers the upgrade overlay.
+// Set _upgradeUrl to your payment link (Shopify, Stripe, etc.) before shipping.
+window._upgradeUrl = "https://TODO"; // ← replace with your $99/yr payment link
+const FREE_COMMITMENT_LIMIT = 10;
+
 const PAY = {
-  enabled: true,
-  link: "https://buy.stripe.com/28E14g3ntcCt15dcRtRC01",
-  price: "$29 · lifetime",
-  blurb: "Unlock unlimited reflections and commitments.",
+  enabled: false, // login gate off — app is free forever
+  link: "",
+  price: "",
+  blurb: "",
 };
 async function checkAccess(user) {
   if (!PAY.enabled) return true;
@@ -181,18 +180,11 @@ async function migrateIfNeeded() {
 // so reflect works immediately and they can see what a real tree looks like.
 const STARTER_SRC = [
   "What did you actually do with today? Hours, not vibes.",
-  "  >> Did you move the thing that matters most right now?",
-  "",
-  "Did you move the thing that matters most right now?",
-  "  yes >> What made today work? Name it so tomorrow can copy it.",
-  "  no >> What did you avoid, and what were you afraid would happen?",
-  "",
-  "What made today work? Name it so tomorrow can copy it.",
-  "  >> done",
-  "",
-  "What did you avoid, and what were you afraid would happen?",
-  "  @[What did you avoid, and what were you afraid would happen?] [1,7d]",
-  "  >> done",
+  "  Did you move the thing that matters most right now?",
+  "    Yes",
+  "      What made today work? Name it so tomorrow can copy it.",
+  "    No",
+  "      What did you avoid, and what were you afraid would happen?",
 ].join("\n");
 async function ensureDefaultFramework() {
   try {
@@ -298,6 +290,7 @@ function subscribe() {
       () => {},
     ),
   );
+
 }
 
 window._subscribeTree = function (treeId) {
@@ -308,7 +301,10 @@ window._subscribeTree = function (treeId) {
       tDoc(treeId, "meta", "source"),
       (snap) => {
         if (!snap.exists()) return;
-        const remote = snap.data().source || "";
+        const data = snap.data();
+        const remote = data.source || "";
+        // restore recall map from Firestore
+        window._recallMap = data.recall || {};
         const t = document.getElementById("src-ta");
         if (t && remote !== t.value && document.activeElement !== t) {
           t.value = remote;
@@ -365,6 +361,23 @@ window._writeSrc = function (treeId, src) {
       setSyncDot("err");
     }
   }, 1200);
+};
+
+let _recallTimers = {};
+window._writeRecall = function (treeId, map) {
+  if (!uid) return;
+  clearTimeout(_recallTimers[treeId]);
+  _recallTimers[treeId] = setTimeout(async () => {
+    try {
+      await setDoc(
+        tDoc(treeId, "meta", "source"),
+        { recall: map || {}, updatedAt: serverTimestamp() },
+        { merge: true },
+      );
+    } catch (e) {
+      console.error("writeRecall:", e);
+    }
+  }, 600);
 };
 
 window._getHistory = function (treeId) {
@@ -427,12 +440,20 @@ window._saveRun = async function (treeId, run) {
 };
 
 // ── Commitments ──  date = ISO check-in date (locked once set); status: active|done|missed|abandoned
-window._addCommitment = async function (text, date) {
+window._addCommitment = async function (text, date, sourceNode) {
   if (!uid) return null;
+  // Free limit: show upgrade overlay after FREE_COMMITMENT_LIMIT total commitments
+  const all = window._commitments || [];
+  if (all.length >= FREE_COMMITMENT_LIMIT) {
+    const ov = document.getElementById("upgradeOv");
+    if (ov) ov.classList.add("on");
+    return null;
+  }
   const id = "cmt_" + Date.now();
   await setDoc(uDoc("commitments", id), {
     text: text || "",
     date: date || "",
+    sourceNode: sourceNode || "",
     status: "active",
     checkedIn: false,
     createdAt: serverTimestamp(),
