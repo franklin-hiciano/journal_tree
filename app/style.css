@@ -54,12 +54,13 @@ body::after {
 .landing-manual b { color: var(--ink); font-weight: 500; }
 
 /* ---------- home ---------- */
+.top-left-cluster { position: absolute; top: calc(env(safe-area-inset-top) + 14px); left: 16px; display: flex; align-items: center; gap: 8px; z-index: 5; }
 .add-corner {
-  position: absolute; top: calc(env(safe-area-inset-top) + 14px); left: 16px; width: 36px; height: 36px;
-  border-radius: 50%; background: transparent; border: 1px solid var(--line); color: var(--ink-dim);
-  font-size: 19px; cursor: pointer; z-index: 5; transition: border-color .3s var(--ease), color .3s var(--ease);
+  width: 36px; height: 36px; border-radius: 50%; background: transparent; border: 1px solid var(--line); color: var(--ink-dim);
+  font-size: 19px; cursor: pointer; transition: border-color .3s var(--ease), color .3s var(--ease);
 }
 .add-corner:hover { border-color: #35343a; color: var(--ink); }
+.edit-toggle { }
 .top-right-cluster { position: absolute; top: calc(env(safe-area-inset-top) + 14px); right: 16px; display: flex; align-items: center; gap: 8px; z-index: 5; }
 .notify-time-group { position: relative; }
 /* the real <input type=time> is functionally still here (it's what opens the
@@ -80,7 +81,12 @@ body::after {
 .signout-corner { position: absolute; bottom: calc(env(safe-area-inset-bottom) + 14px); right: 16px; }
 
 .home-body { flex: 1; overflow-y: auto; padding: 74px 20px 60px; max-width: 640px; width: 100%; margin: 0 auto; }
-.home-hint { font-size: 12px; color: var(--ink-faint); margin-bottom: 18px; }
+.home-hint { font-size: 12px; color: var(--ink-faint); margin-bottom: 18px; line-height: 1.5; }
+.home-hint b { color: var(--ink-dim); font-weight: 500; }
+.desktop-nudge { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); line-height: 1.55;
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+.desktop-nudge b { color: var(--ink); font-weight: 400; word-break: break-all; }
+.q-desktop-note { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); font-style: italic; padding: 2px 0; }
 .q-list { display: flex; flex-direction: column; gap: 10px; }
 .q-row { display: flex; align-items: center; gap: 2px; border-bottom: 1px solid var(--line); padding: 4px 2px; transition: border-color .3s; }
 .q-row:focus-within { border-color: #34333a; }
@@ -99,6 +105,27 @@ body::after {
 .q-icon-btn { background: none; border: none; color: var(--ink-faint); font-size: 13px; cursor: pointer; padding: 8px; transition: color .25s; }
 .q-recall-icon.on { color: var(--ink-dim); }
 .q-del-icon:hover { color: #b46; }
+.q-move { font-size: 13px; padding: 8px 5px; }
+.q-move:hover { color: var(--ink); }
+.q-split { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 6px; padding: 4px 7px; margin: 0 3px; }
+.q-split:hover { color: var(--ink); border-color: #35343a; }
+
+/* branches — options map to at most two lanes (A / B), one level deep */
+.q-branches { margin: 4px 0 6px 12px; padding-left: 14px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.q-opts { display: flex; flex-direction: column; gap: 6px; }
+.q-opt-row { display: flex; align-items: center; gap: 6px; }
+.q-opt-label { flex: 1; min-width: 0; max-width: 220px; background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; color: var(--ink); font-family: var(--mono); font-size: 13px; outline: none; }
+.q-opt-label:focus { border-color: #35343a; }
+.q-exit-toggle { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--ink-dim); font-family: var(--mono); font-size: 12px; cursor: pointer; flex-shrink: 0; }
+.q-exit-toggle.exit-a { border-color: #3a3a42; }
+.q-exit-toggle.exit-b { border-color: #46424a; color: var(--ink); }
+.q-lane-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.q-lane-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
+.q-lane-arrow { color: var(--ink-faint); font-size: 12px; }
+.q-branch-list { display: flex; flex-direction: column; gap: 6px; }
+.q-branch-list .q-text { font-family: var(--serif); font-size: 15px; }
+.q-branch-add { margin-top: 4px; align-self: flex-start; background: none; border: none; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; cursor: pointer; }
+.q-branch-add:hover { color: var(--ink-dim); }
 
 /* ---------- unavailable ---------- */
 .unavail-inner { margin: auto; text-align: center; }
@@ -106,46 +133,78 @@ body::after {
 .unavail-time { font-size: 13px; color: var(--ink-dim); margin-bottom: 26px; }
 
 /* ---------- reflection stage ---------- */
-.reflect.on { display: flex; align-items: center; justify-content: center; }
+.reflect.on { display: flex; align-items: stretch; justify-content: center; }
 .reflect-exit { position: absolute; top: calc(env(safe-area-inset-top) + 16px); right: 18px; background: none;
   border: none; color: var(--ink-faint); font-size: 17px; cursor: pointer; z-index: 6; }
 .reflect-exit:hover { color: var(--ink-dim); }
-/* deliberately subtle — a stray tap shouldn't feel consequential, but it's
-   there for when voice mis-hears a pause and jumps you forward by accident */
 .reflect-back { position: absolute; top: calc(env(safe-area-inset-top) + 16px); left: 18px; background: none;
   border: none; color: var(--ink-faint); font-size: 20px; cursor: pointer; z-index: 6; opacity: .55; display: flex; }
 .reflect-back:hover { opacity: 1; color: var(--ink-dim); }
+.reflect-collapse { position: absolute; top: calc(env(safe-area-inset-top) + 18px); left: 50%; transform: translateX(-50%);
+  background: none; border: none; color: var(--ink-faint); font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; cursor: pointer; z-index: 6; }
+.reflect-collapse:hover { color: var(--ink-dim); }
 
-.phase { display: none; width: 100%; max-width: 620px; padding: 0 30px; }
+/* ceremonial phases (checkin / commit / done) stay centered cards */
+.phase { display: none; width: 100%; max-width: 620px; padding: 0 30px; margin: auto; }
 .phase.on { display: block; animation: phaseIn .55s var(--ease); }
 @keyframes phaseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-.phase.leaving { animation: phaseOut .4s var(--ease) forwards; }
-@keyframes phaseOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-16px); } }
 
-.q-index { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 20px; }
-.q-serif { font-family: var(--serif); font-weight: 400; font-size: 27px; line-height: 1.32; color: var(--ink); margin-bottom: 26px; }
+/* the chat phase is a full-height column: transcript scrolls, composer pinned */
+.phase.chat { max-width: 640px; padding: 0; margin: 0; height: 100%; }
+.phase.chat.on { display: flex; flex-direction: column; }
+.chat-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 26px;
+  padding: calc(env(safe-area-inset-top) + 58px) 30px 20px; }
+.chat-scroll.collapsed .chat-item.past { display: none; }
+.chat-item { animation: phaseIn .5s var(--ease); }
+.chat-item.past { opacity: .4; }
+.chat-q { font-family: var(--serif); font-size: 16px; line-height: 1.4; color: var(--ink-dim); margin-bottom: 6px; }
+.chat-q.big { font-size: 25px; line-height: 1.34; color: var(--ink); margin-bottom: 0; }
+.chat-a { font-family: var(--mono); font-weight: 300; font-size: 15px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; }
 
-.answer-wrap { position: relative; }
-.answer-mono {
-  width: 100%; background: transparent; border: none; outline: none; resize: none; overflow: hidden;
-  color: var(--ink); font-family: var(--mono); font-weight: 300; font-size: 18px; line-height: 1.6;
-  caret-color: var(--ink); padding: 0;
+/* composer pinned to the bottom (thumb zone) */
+.composer { padding: 10px 20px calc(env(safe-area-inset-bottom) + 14px); border-top: 1px solid var(--line); }
+.composer-bar { display: flex; align-items: flex-end; gap: 8px; }
+.composer-input {
+  flex: 1; min-width: 0; background: #111113; border: 1px solid var(--line); border-radius: 18px;
+  padding: 11px 14px; color: var(--ink); font-family: var(--mono); font-weight: 300; font-size: 15px; line-height: 1.5;
+  resize: none; outline: none; max-height: 132px; overflow-y: auto; caret-color: var(--ink);
 }
-.answer-mono::placeholder { color: var(--ink-faint); }
+.composer-input:focus { border-color: #35343a; }
+.composer-input::placeholder { color: var(--ink-faint); }
+.composer-mic, .composer-send {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+  background: transparent; color: var(--ink-dim); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: color .25s, border-color .25s, background .25s;
+}
+.composer-send { background: var(--ink); color: #0a0a0b; border-color: var(--ink); }
+.composer-mic:hover { color: var(--ink); border-color: #35343a; }
+.composer-mic.active { color: var(--ink); border-color: var(--ink); animation: micpulse 1.6s var(--ease) infinite; }
+@keyframes micpulse { 0%,100% { box-shadow: 0 0 0 0 rgba(237,237,236,.18); } 50% { box-shadow: 0 0 0 5px rgba(237,237,236,0); } }
 
-.listening { display: flex; align-items: center; gap: 9px; margin-top: 22px; height: 16px; opacity: 0; transition: opacity .4s var(--ease); }
-.listening.on { opacity: 1; }
-.ld { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-dim); animation: breathe 1.9s var(--ease) infinite; }
-@keyframes breathe { 0%,100% { transform: scale(.7); opacity: .35; } 50% { transform: scale(1); opacity: .9; } }
-.lhint { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+.continue-desktop { display: block; margin: 12px auto 2px; background: none; border: none; color: var(--ink-faint);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .03em; cursor: pointer; }
+.continue-desktop:hover { color: var(--ink-dim); }
 
-.recall-chevron { margin-top: 40px; background: none; border: none; color: var(--ink-faint); font-family: var(--mono);
-  font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; padding: 4px 0; }
-.recall-chevron:hover { color: var(--ink-dim); }
-.recall-chevron .chev { display: inline-block; transition: transform .3s var(--ease); }
-.recall-chevron.open .chev { transform: rotate(90deg); }
-.recall-list { max-height: 0; overflow: hidden; transition: max-height .4s var(--ease); }
-.recall-list.open { max-height: 220px; overflow-y: auto; margin-top: 12px; }
+/* choice question chips inside the composer area */
+.chat-choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.q-choice {
+  text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; color: var(--ink); font-family: var(--mono); font-weight: 300; font-size: 15px;
+  cursor: pointer; transition: border-color .25s var(--ease), background .25s var(--ease), transform .1s var(--ease);
+}
+.q-choice:hover { border-color: #35343a; background: #101012; }
+.q-choice:active { transform: scale(.99); }
+.q-choice.chosen { border-color: var(--ink); background: #141416; }
+
+/* recall inside the composer */
+.chat-recall { background: none; border: none; color: var(--ink-faint); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 2px 0 8px; }
+.chat-recall:hover { color: var(--ink-dim); }
+.chat-recall .chev { display: inline-block; transition: transform .3s var(--ease); }
+.chat-recall.open .chev { transform: rotate(90deg); }
+.chat-recall-list { max-height: 0; overflow: hidden; transition: max-height .4s var(--ease); }
+.chat-recall-list.open { max-height: 180px; overflow-y: auto; margin-bottom: 10px; }
 .recall-item { font-family: var(--mono); font-size: 13px; font-weight: 300; color: var(--ink-dim); padding: 8px 0; border-top: 1px solid var(--line); line-height: 1.5; }
 .recall-date { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px; }
 .recall-empty { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); padding: 10px 0; }
@@ -180,3 +239,10 @@ body::after {
 .done-mark { font-size: 34px; color: var(--ink); margin-bottom: 16px; animation: pop .5s var(--ease); }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .done-text { font-family: var(--serif); font-size: 20px; color: var(--ink-dim); margin-bottom: 30px; }
+
+/* ---------- parked (hand-off confirmation) ---------- */
+#phaseParked { text-align: center; }
+.parked-mark { font-size: 26px; color: var(--ink-faint); margin-bottom: 14px; animation: pop .5s var(--ease); }
+.parked-title { font-family: var(--serif); font-size: 22px; color: var(--ink); margin-bottom: 10px; }
+.parked-sub { font-family: var(--mono); font-size: 13px; color: var(--ink-dim); line-height: 1.6; max-width: 300px; margin: 0 auto 28px; }
+.parked-sub b { color: var(--ink); font-weight: 400; word-break: break-all; }

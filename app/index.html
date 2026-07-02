@@ -43,7 +43,10 @@
 
     <!-- HOME — settings + edit questions -->
     <div class="screen" id="homeScreen">
-      <button class="add-corner" onclick="addQuestion()" title="add a question">+</button>
+      <div class="top-left-cluster">
+        <button class="add-corner" onclick="addQuestion()" title="add a question">+</button>
+        <button class="btn-test edit-toggle" id="editToggle" onclick="toggleEditMode()">edit</button>
+      </div>
       <div class="top-right-cluster">
         <div class="notify-time-group">
           <button class="notify-countdown" id="notifyCountdown" onclick="openTimePicker()"></button>
@@ -52,7 +55,8 @@
         <button class="btn-test" onclick="sendSelfNotification()">test</button>
       </div>
       <div class="home-body">
-        <div class="home-hint">star one question — that's your minimum for the night.</div>
+        <div class="desktop-nudge" id="desktopNudge" style="display:none">Editing is easier on your computer. Open <b id="desktopUrl"></b> — your questions sync automatically.</div>
+        <div class="home-hint">star where your minimum ends. use <b>edit</b> to reorder or branch a question.</div>
         <div id="qList" class="q-list"></div>
       </div>
       <button class="btn-quiet signout-corner" onclick="doSignOut()">sign out</button>
@@ -70,6 +74,7 @@
     <!-- REFLECTION — a single black stage; phases swap inside it -->
     <div class="screen reflect" id="reflectScreen">
       <button class="reflect-back" id="reflectBack" onclick="goBackPhase()" title="back" style="display:none">‹</button>
+      <button class="reflect-collapse" id="reflectCollapse" onclick="toggleTranscript()" title="show / hide history" style="display:none">history</button>
       <button class="reflect-exit" onclick="exitReflection()" title="leave">✕</button>
 
       <!-- DAY-AFTER CHECK-IN -->
@@ -83,19 +88,24 @@
         <button class="btn-shapeless" onclick="resolveCheckin('missed')">I didn't</button>
       </div>
 
-      <!-- QUESTION (voice-first) -->
-      <div class="phase" id="phaseQuestion">
-        <div class="q-index" id="qPhaseIndex"></div>
-        <div class="q-serif" id="qText"></div>
-        <div class="answer-wrap">
-          <textarea id="answerField" class="answer-mono" rows="1" spellcheck="false"
-            autocomplete="off" placeholder=""></textarea>
+      <!-- QUESTION FLOW = chat: a transcript that scrolls up, a composer below -->
+      <div class="phase chat" id="phaseChat">
+        <div class="chat-scroll" id="chatScroll"></div>
+        <div class="composer" id="composer">
+          <div class="chat-choices" id="chatChoices" style="display:none"></div>
+          <button class="chat-recall" id="chatRecall" style="display:none"><span class="chev">›</span> past answers</button>
+          <div class="chat-recall-list" id="chatRecallList"></div>
+          <div class="composer-bar" id="composerBar">
+            <textarea id="answerField" class="composer-input" rows="1" spellcheck="false" autocomplete="off" placeholder="type your answer…"></textarea>
+            <button class="composer-mic" id="micBtn" onclick="toggleMic()" title="dictate">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button>
+            <button class="composer-send" id="sendBtn" onclick="composerSend()" title="send">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <button class="continue-desktop" id="continueDesktop" style="display:none" onclick="showDesktopHint()">easier on your computer ›</button>
         </div>
-        <div class="listening" id="listeningDot"><span class="ld"></span><span class="lhint" id="lhint">listening — pause when you're done</span></div>
-        <button class="recall-chevron" id="recallChevron" style="display:none">
-          <span class="chev">›</span> past answers
-        </button>
-        <div class="recall-list" id="recallList"></div>
       </div>
 
       <!-- COMMIT -->
@@ -116,6 +126,15 @@
         <div class="done-mark">✓</div>
         <div class="done-text" id="doneText">committed. see you tomorrow.</div>
         <button class="btn-shapeless" id="keepGoingBtn" onclick="keepReflecting()">keep reflecting ›</button>
+      </div>
+
+      <!-- PARKED — after "continue on your computer": phone goes quiet, other
+           device picks up in real time (or via push, within a few minutes) -->
+      <div class="phase" id="phaseParked">
+        <div class="parked-mark">↗</div>
+        <div class="parked-title">saved</div>
+        <div class="parked-sub">continue at <b id="parkedUrl"></b> — it'll pick up right where you left off.</div>
+        <button class="btn-shapeless" onclick="resumeHere()">keep going here instead</button>
       </div>
     </div>
 

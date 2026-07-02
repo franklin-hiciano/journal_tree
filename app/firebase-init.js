@@ -110,6 +110,15 @@ onAuthStateChanged(auth, async (user) => {
       window._onCommitmentsUpdated && window._onCommitmentsUpdated();
     }, () => {});
 
+    // hand-off signal: written when you tap "continue on your computer" on
+    // one device. Any other device (that isn't itself a phone) listening in
+    // real time picks it up instantly if it's already open — the push-based
+    // fallback below is only needed when the target device isn't open.
+    onSnapshot(uDoc("state", "handoff"), (snap) => {
+      window._handoff = snap.exists() ? snap.data() : null;
+      window._onHandoffUpdated && window._onHandoffUpdated();
+    }, () => {});
+
     window._onSignedIn && window._onSignedIn();
   } else {
     uid = null;
@@ -189,13 +198,32 @@ window._resolveCommitment = async function (id, status) {
   } catch (e) {}
 };
 
-window._registerPush = function () {
+// one stable id per browser install (not per user) — lets a single account
+// register a token from their phone AND their laptop without one overwriting
+// the other, which is what a single shared doc used to do.
+function deviceId() {
+  let id = localStorage.getItem("rc_device_id");
+  if (!id) { id = "dev_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("rc_device_id", id); }
+  return id;
+}
+
+window._registerPush = function (kind) {
   if (!uid) return;
   registerForPush(fbApp, uid, async (token, tzOffsetMin) => {
     try {
-      await setDoc(uDoc("state", "push"), { token, tzOffsetMin, updatedAt: serverTimestamp() });
+      await setDoc(uDoc("devices", deviceId()), { token, kind: kind || "mobile", tzOffsetMin, updatedAt: serverTimestamp() });
     } catch (e) {}
   });
+};
+
+// -- hand-off: request / consume --
+window._requestHandoff = async function () {
+  if (!uid) return;
+  try { await setDoc(uDoc("state", "handoff"), { requestedAt: serverTimestamp(), consumed: false }); } catch (e) {}
+};
+window._consumeHandoff = async function () {
+  if (!uid) return;
+  try { await setDoc(uDoc("state", "handoff"), { consumed: true }, { merge: true }); } catch (e) {}
 };
 
 window._fbReady = true;
