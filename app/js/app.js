@@ -164,6 +164,14 @@ window.onNotifyTimeChange = (v) => {
   settings.notifyTime = v; saveLocalSettings(); renderNotifyLabel();
   window._saveSettings && window._saveSettings({ notifyTime: v });
 };
+// the visible "reflects at 8:00 PM" button is the only place the time is
+// ever stated — tapping it opens the (invisible) native time input beneath it.
+window.openTimePicker = () => {
+  const el = document.getElementById("notifyTimeInput");
+  if (!el) return;
+  if (el.showPicker) { try { el.showPicker(); return; } catch (_) {} }
+  el.focus();
+};
 
 function renderQuestionEditor() {
   const list = document.getElementById("qList"); if (!list) return;
