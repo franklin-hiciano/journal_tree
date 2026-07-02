@@ -68,12 +68,17 @@
                 font-family: var(--fm);
             }
 
-            /* header */
+            /* header */ /* header (Updated: Permanent Sticky Behavior) */
             header {
+                position: sticky;
+                top: 0;
+                background: var(--bg);
+                z-index: 1000;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 24px 0;
+                padding: 16px 0;
+                border-bottom: 1px solid var(--border);
             }
             .brand {
                 font-family: var(--fh);
@@ -96,6 +101,24 @@
             .nav-cta:hover {
                 border-color: var(--acc-dim);
                 color: var(--acc);
+            }
+
+            /* NEW: Split layout for Hero top section */
+            .hero-split {
+                display: grid;
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 32px;
+                text-align: left;
+                align-items: center;
+                margin-bottom: 40px;
+            }
+            .hero-left h1 {
+                text-align: left !important;
+                margin-left: 0 !important;
+            }
+            .hero-right {
+                display: flex;
+                justify-content: flex-end;
             }
 
             /* hero */
@@ -469,6 +492,32 @@
                 color: var(--acc);
             }
 
+            /* NEW: Split layout for Proof section */
+            .proof-split {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 40px;
+                align-items: center;
+                margin-top: 38px;
+            }
+            .proof-left {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+            .proof-right {
+                text-align: left;
+            }
+            .reel-wrap {
+                width: 100%;
+                max-width: 340px;
+                aspect-ratio: 9 / 16;
+                background: #0d0a07;
+                border: 1px solid var(--border2);
+                border-radius: 14px;
+                overflow: hidden;
+            }
+
             /* proof */
             .proof {
                 border: 1px solid var(--border2);
@@ -476,7 +525,7 @@
                 padding: 34px 30px;
                 background: var(--surf);
                 max-width: 760px;
-                margin: 38px auto 0;
+                margin: 0; /* Changed from margin: 38px auto 0 to handle split layout spacing */
             }
             .proof p {
                 font-size: 18px;
@@ -726,6 +775,19 @@
             }
 
             @media (max-width: 720px) {
+                .hero-split {
+                    grid-template-columns: 1fr;
+                    text-align: center;
+                }
+                .hero-left h1 {
+                    text-align: center !important;
+                }
+                .hero-right {
+                    justify-content: center;
+                }
+                .proof-split {
+                    grid-template-columns: 1fr;
+                }
                 .mech {
                     grid-template-columns: 1fr;
                     gap: 26px;
@@ -747,410 +809,75 @@
         <div class="wrap">
             <header>
                 <div class="brand">Reflect <b>&amp;</b> Commit</div>
+                <a
+                    class="btn btn-primary"
+                    href="/app/"
+                    style="
+                        padding: 8px 16px;
+                        font-size: 13.5px;
+                        border-radius: 7px;
+                    "
+                    >Get started</a
+                >
             </header>
 
-            <!-- HERO -->
             <section class="hero" style="padding-top: 48px">
-                <div class="kicker">Reflect &amp; Commit</div>
-                <h1>The <em>fast and effective</em> way to journal.</h1>
-
-                <div class="cta-row">
-                    <a
-                        class="btn btn-primary"
-                        href="/app/"
-                        >Get started — free</a
-                    >
-                    <a class="btn btn-ghost" href="#demo">Watch the demo</a>
-                </div>
-
-                <div class="video-wrap" id="demo">
-                    <script src="https://player.vimeo.com/api/player.js"></script>
-
-                    <div class="video-frame">
-                        <iframe
-                            id="pitch-video"
-                            src="https://player.vimeo.com/video/1204235305?title=0&byline=0&portrait=0&color=e0793f"
-                            allow="autoplay; fullscreen; picture-in-picture"
-                            allowfullscreen
-                        ></iframe>
+                <div class="hero-split">
+                    <div class="hero-left">
+                        <div class="kicker">Reflect &amp; Commit</div>
+                        <h1>Stagnating in WFH?</h1>
+                        <sub>The No 1. reality check for ambitious people</sub>
                     </div>
-                </div>
-                <script src="https://player.vimeo.com/api/player.js"></script>
-                <script>
-                    (function () {
-                        var iframe = document.getElementById("pitch-video");
-                        if (!iframe || !window.Vimeo) return;
-                        var v = new Vimeo.Player(iframe);
-                        var SPEED = 1.2;
-                        v.setPlaybackRate(SPEED).catch(function () {});
-                        v.on("play", function () {
-                            v.setPlaybackRate(SPEED).catch(function () {});
-                        });
-                    })();
-                </script>
-            </section>
-
-            <!-- TRY MY TREE -->
-            <section id="try-tree">
-                <div class="sec-tag">How I use it</div>
-                <h2 class="sec-h">Try my actual tree.</h2>
-                <p class="sec-lead">
-                    Run through the questions I use every night. Answer for real
-                    — notice where it makes you stop.
-                </p>
-                <div class="demo-runner">
-                    <div class="dr-card" id="drCard">
-                        <div class="dr-meta" id="drMeta">TEXT RESPONSE</div>
-                        <div class="dr-prompt" id="drPrompt"></div>
-                        <div class="dr-input-wrap" id="drInputWrap">
-                            <input
-                                class="dr-input"
-                                id="drInput"
-                                type="text"
-                                placeholder="type your response…"
-                                autocomplete="off"
-                            />
-                            <div class="dr-input-line"></div>
-                        </div>
-                        <div class="dr-choices" id="drChoices"></div>
-                        <div class="dr-nav">
-                            <button
-                                class="dr-next"
-                                id="drNext"
-                                onclick="demoNext()"
-                            >
-                                next →
-                            </button>
-                        </div>
-                    </div>
-                    <div class="dr-end" id="drEnd" style="display: none">
-                        <!-- step 1: write the commitment -->
-                        <div id="drEndInput">
-                            <div class="dr-meta">COMMITMENT</div>
-                            <div class="dr-end-h">commit to one move</div>
-                            <div class="dr-end-sub">
-                                One thing you'll make real. The day after, a
-                                clean yes or no.
-                            </div>
-                            <div class="dr-input-wrap">
-                                <input
-                                    class="dr-input"
-                                    id="drCommit"
-                                    type="text"
-                                    placeholder="I will…"
-                                    autocomplete="off"
-                                    oninput="drCommitInput()"
-                                    onkeydown="
-                                        if (event.key === 'Enter') demoCommit();
-                                    "
-                                />
-                                <div class="dr-input-line"></div>
-                            </div>
-                            <div style="margin-top: 20px">
-                                <button
-                                    class="btn btn-primary"
-                                    id="drCommitBtn"
-                                    onclick="demoCommit()"
-                                    disabled
-                                    style="
-                                        opacity: 0.45;
-                                        cursor: not-allowed;
-                                        width: 100%;
-                                    "
-                                >
-                                    commit →
-                                </button>
-                            </div>
-                        </div>
-                        <!-- step 2: committed — now get the real thing -->
-                        <div id="drEndConfirm" style="display: none">
-                            <div class="dr-meta" style="color: #7fae6f">
-                                COMMITTED ✓
-                            </div>
-                            <div
-                                class="dr-end-h"
-                                id="drCommittedText"
-                                style="color: var(--text)"
-                            ></div>
-                            <div class="dr-end-sub" style="margin-top: 10px">
-                                Now track it for real — the app checks in with
-                                you the day after.
-                            </div>
-                            <div style="margin-top: 24px">
-                                <a
-                                    class="btn btn-primary"
-                                    href="/app/"
-                                    style="
-                                        width: 100%;
-                                        display: block;
-                                        text-align: center;
-                                    "
-                                    >get the full app →</a
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- BUILD YOUR OWN -->
-            <section id="editor-try">
-                <div class="sec-tag">Build your own</div>
-                <h2 class="sec-h">Write a tree. Run it.</h2>
-                <p class="sec-lead">
-                    Edit the starter or write from scratch. Press run to walk
-                    through it card by card.
-                </p>
-                <div class="editor-demo">
-                    <div class="editor-demo-pane">
-                        <textarea
-                            class="editor-demo-ta"
-                            id="editorDemoTa"
-                            spellcheck="false"
-                        >
-What is the highest leverage thing you can do right now
-  >> What do you see yourself having achieved a week from now? What would it take to get there
-
-What do you see yourself having achieved a week from now? What would it take to get there
-  >> done
-
-done
-</textarea
-                        >
-                    </div>
-                    <div class="editor-demo-run">
-                        <div class="edr-card">
-                            <div class="edr-prompt" id="edrPrompt">
-                                Press "run ▶" to walk through your tree.
-                            </div>
-                            <div
-                                class="dr-input-wrap"
-                                id="edrInputWrap"
-                                style="display: none"
-                            >
-                                <input
-                                    class="dr-input"
-                                    id="edrInput"
-                                    type="text"
-                                    placeholder="type…"
-                                    autocomplete="off"
-                                    onkeydown="edrKey(event)"
-                                />
-                                <div class="dr-input-line"></div>
-                            </div>
-                            <div class="edr-choices" id="edrChoices"></div>
-                            <div
-                                id="edrEnd"
-                                style="display: none; margin-top: 16px"
-                            >
-                                <div
-                                    style="
-                                        font-family: var(--fm);
-                                        font-size: 12px;
-                                        color: var(--acc);
-                                        margin-bottom: 14px;
-                                    "
-                                >
-                                    ↳ ready to commit to one move
-                                </div>
-                                <a
-                                    class="btn btn-primary"
-                                    href="/app/"
-                                    >get the full app →</a
-                                >
-                            </div>
-                        </div>
-                        <button
-                            class="btn btn-primary"
-                            onclick="runEditorDemo()"
+                    <div class="hero-right">
+                        <div
                             style="
-                                margin-top: 12px;
-                                width: 100%;
-                                text-align: center;
+                                font-family: var(--fm);
+                                font-size: 13px;
+                                color: var(--muted);
+                                letter-spacing: 0.05em;
                             "
-                        >
-                            run ▶
-                        </button>
+                        ></div>
+
+                        <div class="cta-row" style="margin-top: 0">
+                            <a class="btn btn-primary" href="/app/"
+                                >Get started</a
+                            >
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- FORKS -->
             <section>
-                <div class="sec-tag">Purpose: minimize regret</div>
-                <h2 class="sec-h">
-                    Ever imagined how much farther you'd be if you'd taken more
-                    risks?
-                </h2>
-
-                <div class="forkwrap">
-                    <svg
-                        class="forksvg"
-                        viewBox="0 0 600 260"
-                        aria-hidden="true"
-                    >
-                        <line
-                            x1="20"
-                            y1="40"
-                            x2="20"
-                            y2="220"
-                            class="fk-axis"
-                        />
-                        <path
-                            d="M20,220 C120,202 220,182 300,150"
-                            class="fk-past"
-                        />
-                        <text x="22" y="234" class="fk-lbl">
-                            life paths already closed to you
-                        </text>
-                        <circle cx="300" cy="150" r="4" class="fk-today" />
-                        <text
-                            x="300"
-                            y="138"
-                            text-anchor="middle"
-                            class="fk-lbl fk-acc"
-                        >
-                            today
-                        </text>
-                        <path d="M300,150 L580,168" class="fk-minor" />
-                        <path d="M300,150 L580,156" class="fk-minor" />
-                        <path d="M300,150 L580,144" class="fk-minor" />
-                        <text x="580" y="186" text-anchor="end" class="fk-lbl">
-                            forks that don't matter much
-                        </text>
-                        <path
-                            d="M300,150 C400,140 480,90 580,30"
-                            class="fk-major"
-                        />
-                        <text
-                            x="578"
-                            y="20"
-                            text-anchor="end"
-                            class="fk-lbl fk-acc"
-                        >
-                            the fork that takes you somewhere completely
-                            different
-                        </text>
-                    </svg>
+                <div class="sec-tag"></div>
+                <h2>Execute your little ideas. See where you go.</h2>
+                <div class="proof" style="margin-top: 20px; max-width: 100%">
+                    <p>
+                        Reflect and Commit has helped me think of tiny risks (a
+                        shady business and this app) I've spent
+                        <b>105-110 hours</b> working on in the last 5 weeks,
+                        which has slowly raised my ego in my ability to get shit
+                        done enough that I'm skipping college to make money on
+                        my own.
+                    </p>
+                    <div class="who">— Franklin</div>
+                </div>
+                <div class="proof-split">
+                    <div class="proof-right"></div>
                 </div>
             </section>
 
-            <!-- CONTRAST -->
             <section>
-                <div class="sec-tag">Why it matters</div>
-                <h2 class="sec-h">Two versions of tomorrow.</h2>
+                <div class="sec-tag"></div>
+                <h2>Take more risks.</h2>
                 <div class="twocol">
                     <div class="col without">
-                        <div class="col-tag">My typical night a month ago</div>
-                        <p>
-                            Go to bed with plans to lock-in on homework
-                            tomorrow. Wake up a bit late, eat lunch and shower.
-                            Do some homework, unfocused after an hour. Go
-                            outside with mom, stay an extra hour (because why
-                            not). Get home. Wait till later to get some work
-                            done, lose focus again. Watch TV, go to bed. Say
-                            I'll finish the work tomorrow.
-                        </p>
-                    </div>
-                    <div class="col with">
                         <div class="col-tag">
-                            An actual day after 2-3 weeks of self-observation
+                            Reflect and Commit asks you questions you made a few
+                            weeks ago to convince yourself to take risks you're
+                            afraid of the very next day.
                         </div>
-                        <p>
-                            Make a plan for tomorrow, make hard decisions, go to
-                            sleep. Step out of bed and start work instantly,
-                            knowing I'd get distracted otherwise. Fix a
-                            situation with a customer for my ebay business. Get
-                            hungry but go run before eating, knowing I'd get too
-                            lethargic to run. Difficult conversation with my
-                            parents about skipping college, decided the night
-                            before. Keep coding this app and run some ads.
-                            Reflect again, go to bed.
-                        </p>
+                        <p></p>
                     </div>
-                </div>
-
-                <div class="cascade">
-                    <div class="lead-in">That same day, traced forward</div>
-                    <p>
-                        ads get me banned from TikTok
-                        <span class="arw">→</span> find a new product
-                        <span class="arw">→</span> realize I can also sell this
-                        app <span class="arw">→</span> pull an all nighter to
-                        polish my prototype <span class="arw">→</span> 5 sales
-                        during my graduation rehearsal
-                        <span class="arw">→</span>
-                        launch this product page and video tutorials
-                        <span class="arw">→</span> show my extended family
-                        <span class="arw">→</span> they think I'm "legit"
-                        <span class="arw">→</span> agree to fund my business and
-                        support my dream of not entering college
-                    </p>
-                </div>
-            </section>
-
-            <!-- PROOF -->
-            <section>
-                <div class="sec-tag" style="text-align: center">
-                    Why I built it
-                </div>
-                <h2 class="sec-h" style="text-align: center">
-                    I'm the first user, and the proof.
-                </h2>
-                <div class="proof">
-                    <p>
-                        I've run this every night since the day I built it —
-                        it's allocated somewhere north of<b>.</b>60-80 extra
-                        hours of deep work to my business, and I wouldn't trade
-                        my focus for anything. It's the reason I decided not to
-                        go to college while everyone around me said to go.
-                    </p>
-                    <p>
-                        I'm not selling you my principles or my results. You may
-                        value different things, ask yourself different
-                        questions, and that's the whole point — I'm selling you
-                        the machine to enforce your own personal ambitions.
-                    </p>
-                    <div class="who">
-                        — Franklin · five friends are starting this week
-                    </div>
-                </div>
-            </section>
-
-            <!-- TUTORIAL VIDEO -->
-            <section id="tutorial">
-                <div class="sec-tag">Tutorial</div>
-                <h2 class="sec-h">I'll even help you get started.</h2>
-                <p class="sec-lead">A guide on engineering your own tree.</p>
-                <div class="video-wrap" style="margin-top: 32px">
-                    <div class="video-frame">
-                        <!-- replace this placeholder with your Vimeo iframe when ready:
-                        <iframe src="https://player.vimeo.com/video/YOUR_ID?title=0&byline=0&portrait=0&color=e0793f" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-                        -->
-                        <div class="video-ph">
-                            <div class="play-dot"></div>
-                            <span>coming soon</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PRICING -->
-            <section class="pricing">
-                <div class="sec-tag">Get it</div>
-                <h2 class="sec-h">Free forever.</h2>
-                <div class="price-card">
-                    <div class="price-amt">Free <small>forever</small></div>
-                    <div class="price-list">
-                        <span>Your own self-interrogation system</span>
-                        <span>Track your progress over time</span>
-                        <span>Up to 10 commitments included</span>
-                    </div>
-                    <a
-                        class="btn btn-primary"
-                        href="/app/"
-                        >Start reflecting →</a
-                    >
                 </div>
             </section>
 

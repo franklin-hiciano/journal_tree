@@ -10,7 +10,16 @@ function firstNode(){return Object.keys(parsedTree)[0]||null;}
 // ── reflect entry — just check that the tree has at least one node ──
 function attemptReflect(){
   if(!Object.keys(parsedTree).length)return;
+  if(window._parseErrors&&window._parseErrors.length){flashReflectError();return;}
   startReflection();
+}
+function flashReflectError(){
+  const btn=document.querySelector('.reflect-btn');
+  if(!btn)return;
+  btn.classList.remove('shake');
+  void btn.offsetWidth; // restart the animation if it's already mid-shake
+  btn.classList.add('shake');
+  setTimeout(()=>btn.classList.remove('shake'),400);
 }
 
 // ── start / exit ──
@@ -182,7 +191,12 @@ function endCommit(){
   exitReflection();
   // teach "reflections compound" right after someone lands their first real commitment —
   // not before they've used the app at all. _maybeShowCompoundCard no-ops after night one.
+  // it chains into the "make it a habit" install popup on dismiss so the two never stack;
+  // if it's already been seen, show the habit popup straight away.
+  let compoundWillShow=false;
+  try{compoundWillShow=localStorage.getItem('rc_compound_seen')!=='1';}catch(e){}
   if(window._maybeShowCompoundCard)window._maybeShowCompoundCard();
+  if(!compoundWillShow&&window._maybeShowHabitPopup)window._maybeShowHabitPopup();
 }
 function endToggleNotes(){
   const en=document.getElementById('endNotes');if(!en)return;
@@ -191,4 +205,8 @@ function endToggleNotes(){
   if(!showing){const nt=document.getElementById('endNotesText');if(nt){nt.value=window._notes||'';setTimeout(()=>nt.focus(),50);}}
 }
 function endNotesInput(){if(window._saveNotes)window._saveNotes(document.getElementById('endNotesText').value);}
-function finishReflection(){exitReflection();}
+function finishReflection(){
+  // "finish without committing" and "return" don't trigger the habit popup — it's
+  // reserved for after a real commitment (endCommit) or the manual FAB button.
+  exitReflection();
+}

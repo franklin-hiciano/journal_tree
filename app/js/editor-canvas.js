@@ -22,10 +22,13 @@ function esc(s) {
 }
 
 // ── Parser ─���────────────────────────────────────────────────────────────────────────
+// ── Parser ───────────────────────────────────────────────────────────────────────────
 function parseIndented(src) {
   const rawLines = (src || "").split("\n");
   const lineItems = []; // { text, level, rawLine }
+  const globalNodes = new Set();
 
+  // 1. Populate lineItems first
   rawLines.forEach((raw, i) => {
     const tr = raw.trim();
     if (!tr || tr.startsWith("#")) return;
@@ -33,7 +36,14 @@ function parseIndented(src) {
     lineItems.push({ text: tr, level: Math.floor(sp / 2), rawLine: i });
   });
 
-  if (!lineItems.length) return { nodes: {}, lineTypes: {} };
+  if (!lineItems.length) return { nodes: {}, lineTypes: {}, errors: [] };
+
+  // 2. Now collect global root nodes (safe because lineItems now contains data!)
+  lineItems.forEach((item) => {
+    if (item.level === 0) {
+      globalNodes.add(item.text);
+    }
+  });
 
   // Build parent→children arrays using a stack
   const childList = lineItems.map(() => []);
@@ -47,15 +57,25 @@ function parseIndented(src) {
 
   const nodes = {};
   const lineTypes = {}; // rawLine → 'question' | 'option' | 'continuation'
+  const errors = []; // { rawLine, text, kind: 'number-title' }
 
   function processQuestion(idx) {
     const item = lineItems[idx];
+    if (item.level > 0 && globalNodes.has(item.text)) {
+      return item.text;
+    }
+
+    // question titles can't start with a number — flag it instead of silently
+    // letting it through into the tree.
+    if (/^\d/.test(item.text)) {
+      errors.push({ rawLine: item.rawLine, text: item.text, kind: "number-title" });
+    }
+
     let id = item.text,
       n = 2;
     while (id in nodes) id = item.text + " (" + n++ + ")";
-    nodes[id] = null; // reserve slot to detect duplicates
+    nodes[id] = null;
     lineTypes[item.rawLine] = "question";
-
     const ch = childList[idx];
     let nodeData;
 
@@ -83,18 +103,27 @@ function parseIndented(src) {
       // Multiple children → option labels (multiple choice)
       const opts = [];
       for (const ci of ch) {
-        lineTypes[lineItems[ci].rawLine] = "option";
-        const oc = childList[ci];
+        const optChildren = childList[ci];
         let nextId;
-        if (oc.length === 0) nextId = "done";
-        else if (oc.length === 1) nextId = processQuestion(oc[0]);
-        else nextId = processQuestion(ci); // option itself becomes a question
+
+        if (optChildren.length === 0) {
+          nextId = "done";
+          lineTypes[lineItems[ci].rawLine] = "option";
+        } else if (optChildren.length === 1) {
+          nextId = processQuestion(optChildren[0]);
+          lineTypes[lineItems[ci].rawLine] = "option";
+        } else {
+          nextId = processQuestion(ci);
+          lineTypes[lineItems[ci].rawLine] = "option";
+        }
+
         opts.push({
           l: lineItems[ci].text,
           n: nextId,
           rawLine: lineItems[ci].rawLine,
         });
       }
+
       nodeData = {
         title: item.text,
         type: "single",
@@ -118,12 +147,13 @@ function parseIndented(src) {
     if (nodes[k] === null) delete nodes[k];
   });
 
-  return { nodes, lineTypes };
+  return { nodes, lineTypes, errors };
 }
 
 // ── Syntax highlighter ─────────────────────────────────────��────────────────────────
 function hiliteIndented(src) {
   const types = window._lineTypes || {};
+  const errLines = window._parseErrorLines || null;
   return (src || "")
     .split("\n")
     .map((line, i) => {
@@ -131,6 +161,8 @@ function hiliteIndented(src) {
       if (!tr) return "";
       if (tr.startsWith("#"))
         return '<span class="h-cmt">' + esc(line) + "</span>";
+      if (errLines && errLines.has(i))
+        return '<span class="h-error">' + esc(line) + "</span>";
       const t = types[i];
       const isTitle = t === "question" || (!t && !/^\s/.test(line));
       if (isTitle) return '<span class="h-title">' + esc(line) + "</span>";
@@ -693,15 +725,30 @@ window._onSrcChange = function (write = true) {
   if (write && window._writeSrc && typeof _activeTreeId !== "undefined")
     window._writeSrc(_activeTreeId, src);
 
-  const { nodes, lineTypes } = parseIndented(src);
+  const { nodes, lineTypes, errors } = parseIndented(src);
   window._lineTypes = lineTypes;
+  window._parseErrors = errors || [];
+  window._parseErrorLines = new Set((errors || []).map((e) => e.rawLine));
   if (typeof parsedTree !== "undefined") parsedTree = nodes;
 
   const pst = document.getElementById("pst");
   if (pst) {
-    const k = Object.keys(nodes).length;
-    pst.textContent = k ? k + (k === 1 ? " node" : " nodes") : "—";
-    pst.className = "pstatus" + (k ? " ok" : "");
+    if (window._parseErrors.length) {
+      const first = window._parseErrors[0];
+      const shown = first.text.length > 40 ? first.text.slice(0, 40) + "…" : first.text;
+      pst.textContent =
+        "⚠ question titles can't start with a number: \"" +
+        shown +
+        '"' +
+        (window._parseErrors.length > 1
+          ? " (+" + (window._parseErrors.length - 1) + " more)"
+          : "");
+      pst.className = "pstatus err";
+    } else {
+      const k = Object.keys(nodes).length;
+      pst.textContent = k ? k + (k === 1 ? " node" : " nodes") : "—";
+      pst.className = "pstatus" + (k ? " ok" : "");
+    }
   }
 
   updateEditor();

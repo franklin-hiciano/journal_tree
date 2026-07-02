@@ -125,16 +125,16 @@ function checkNotiBanner(){
   if(show)updateNotiBanner();
 }
 function updateNotiBanner(){
-  const status=document.getElementById(‘notiBannerStatus’);
-  const btn=document.getElementById(‘notiBannerBtn’);
+  const status=document.getElementById('notiBannerStatus');
+  const btn=document.getElementById('notiBannerBtn');
   if(!status||!btn)return;
-  const perm=_hasNotif?Notification.permission:’unsupported’;
-  const testSent=localStorage.getItem(‘notif_test_sent’)===’1’;
-  let msg=’Get a daily nudge to reflect.’, label=’turn on’;
-  if(!_hasNotif){msg=’Notifications aren\’t supported in this browser.’;}
-  else if(!window.isSecureContext){msg=’Open via http://localhost or https to enable reminders.’;}
-  else if(perm===’denied’){msg=’Reminders are blocked — allow notifications in your browser settings.’;label=’retry’;}
-  else if(testSent&&perm===’granted’){msg=’Tap the notification to confirm.’;label=’send again’;}
+  const perm=_hasNotif?Notification.permission:'unsupported';
+  const testSent=localStorage.getItem('notif_test_sent')==='1';
+  let msg='Get a daily nudge to reflect.', label='turn on';
+  if(!_hasNotif){msg="Notifications aren't supported in this browser.";}
+  else if(!window.isSecureContext){msg='Open via http://localhost or https to enable reminders.';}
+  else if(perm==='denied'){msg='Reminders are blocked — allow notifications in your browser settings.';label='retry';}
+  else if(testSent&&perm==='granted'){msg='Tap the notification to confirm.';label='send again';}
   status.textContent=msg;
   btn.textContent=label;
   btn.onclick=sendTestNotif;

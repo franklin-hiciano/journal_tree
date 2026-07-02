@@ -45,6 +45,8 @@ window._dismissCompoundCard = function () {
   const card = document.getElementById('compoundCard');
   if (card) card.classList.remove('on');
   try { localStorage.setItem(_CC_KEY, '1'); } catch (e) {}
+  // chain into the "make it a habit" install popup so the two never show at once
+  window._maybeShowHabitPopup && window._maybeShowHabitPopup();
 };
 
 window._maybeShowCompoundCard = function () {

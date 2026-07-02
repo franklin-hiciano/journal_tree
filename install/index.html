@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Install Reflect &amp; Commit</title>
+        <meta name="description" content="Put Reflect & Commit on your home screen so tonight's reflection is one tap away." />
+        <link rel="manifest" href="../app/manifest.json" />
+        <meta name="theme-color" content="#0a0a0a" />
+        <link rel="apple-touch-icon" href="../app/icons/apple-touch-icon.png" />
+        <link rel="icon" href="../app/icons/icon-192.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap" />
+        <style>
+            :root {
+                --bg: #0a0a0a;
+                --surf: #131313;
+                --surf2: #1a1a1a;
+                --border2: #2e2e2e;
+                --text: #e2e0d9;
+                --muted: #888;
+                --muted2: #aaa;
+                --accent: #ee0000;
+                --accent-h: #f4ff5e;
+                --fh: "Syne", sans-serif;
+                --fm: "DM Mono", ui-monospace, monospace;
+            }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            html, body { height: 100%; }
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--fm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 28px 20px;
+                line-height: 1.6;
+            }
+            .card {
+                width: 100%;
+                max-width: 400px;
+                text-align: center;
+            }
+            .icon {
+                width: 72px;
+                height: 72px;
+                border-radius: 18px;
+                margin: 0 auto 20px;
+                display: block;
+            }
+            .brand {
+                font-family: var(--fh);
+                font-weight: 800;
+                font-size: 22px;
+            }
+            .brand b { color: var(--accent); }
+            .pitch {
+                margin-top: 10px;
+                color: var(--muted2);
+                font-size: 14px;
+            }
+            .open-btn {
+                display: block;
+                width: 100%;
+                margin-top: 26px;
+                padding: 14px 20px;
+                border-radius: 10px;
+                background: var(--accent);
+                color: #fff;
+                text-decoration: none;
+                font-family: var(--fh);
+                font-weight: 800;
+                font-size: 15px;
+                border: none;
+                cursor: pointer;
+            }
+            .open-btn:hover { filter: brightness(1.08); }
+            .install-btn {
+                display: none;
+                width: 100%;
+                margin-top: 12px;
+                padding: 12px 20px;
+                border-radius: 10px;
+                background: none;
+                border: 1px solid var(--accent);
+                color: var(--accent-h);
+                font-family: var(--fh);
+                font-weight: 700;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            .steps {
+                margin-top: 26px;
+                text-align: left;
+                background: var(--surf);
+                border: 1px solid var(--border2);
+                border-radius: 12px;
+                padding: 16px 18px;
+                font-size: 13px;
+                color: var(--muted2);
+            }
+            .steps .lbl {
+                font-family: var(--fh);
+                font-weight: 700;
+                font-size: 11px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--muted);
+                margin-bottom: 8px;
+            }
+            .steps ol { padding-left: 18px; }
+            .steps li + li { margin-top: 6px; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <img class="icon" src="../app/icons/icon-192.png" alt="" />
+            <div class="brand">Reflect <b>&amp;</b> Commit</div>
+            <div class="pitch">Put it on your home screen so tonight's reflection is one tap away.</div>
+
+            <a class="open-btn" href="../app/">Open Reflect &amp; Commit</a>
+            <button class="install-btn" id="installBtn">Install app</button>
+
+            <div class="steps" id="steps">
+                <div class="lbl">then add it to your home screen</div>
+                <ol id="stepsList">
+                    <li>Open the app using the button above.</li>
+                    <li>Use your browser's menu to add it to your home screen.</li>
+                </ol>
+            </div>
+        </div>
+
+        <script>
+            // If this browser is willing to prompt natively, offer a real install button.
+            let deferredPrompt = null;
+            window.addEventListener("beforeinstallprompt", (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const btn = document.getElementById("installBtn");
+                if (btn) btn.style.display = "block";
+            });
+            const installBtn = document.getElementById("installBtn");
+            if (installBtn) {
+                installBtn.addEventListener("click", async () => {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    try { await deferredPrompt.userChoice; } catch (e) {}
+                    deferredPrompt = null;
+                    installBtn.style.display = "none";
+                });
+            }
+
+            // Platform-specific "add to home screen" instructions.
+            const ua = navigator.userAgent || "";
+            const isIOS = /iphone|ipad|ipod/i.test(ua);
+            const isAndroid = /android/i.test(ua);
+            const stepsList = document.getElementById("stepsList");
+            if (stepsList) {
+                if (isIOS) {
+                    stepsList.innerHTML =
+                        "<li>Open the app using the button above (in Safari).</li>" +
+                        "<li>Tap the Share icon.</li>" +
+                        '<li>Tap "Add to Home Screen."</li>';
+                } else if (isAndroid) {
+                    stepsList.innerHTML =
+                        "<li>Open the app using the button above.</li>" +
+                        '<li>Tap the browser menu (⋮) and choose "Add to Home screen" or "Install app" — or use the Install button above if it appears.</li>';
+                }
+            }
+        </script>
+    </body>
+</html>
