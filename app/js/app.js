@@ -84,12 +84,26 @@ function maybeOpenFromUrl() {
 // ---------- install ----------
 let deferredInstallPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredInstallPrompt = e; });
+
+function isMobileUA() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.userAgentData && navigator.userAgentData.mobile);
+}
+
 window.onGetStarted = async () => {
   if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; return; }
-  const url = location.href.split("?")[0];
-  document.getElementById("landingQrImg").src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
-  document.getElementById("landingQrWrap").style.display = "block";
+
   document.getElementById("getStartedBtn").style.display = "none";
+
+  if (isMobileUA()) {
+    // Chrome hasn't offered the native prompt (yet) on this device — a QR
+    // code pointing at the page you're already on is useless here. Fall back
+    // to plain instructions for manual add-to-home-screen instead.
+    document.getElementById("landingManual").style.display = "block";
+  } else {
+    const url = location.href.split("?")[0];
+    document.getElementById("landingQrImg").src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
+    document.getElementById("landingQrWrap").style.display = "block";
+  }
 };
 
 // ---------- notification window ----------
