@@ -42,7 +42,10 @@
     <div class="screen" id="homeScreen">
       <button class="add-corner" onclick="addQuestion()" title="add a question">+</button>
       <div class="top-right-cluster">
-        <input type="time" id="notifyTimeInput" onchange="onNotifyTimeChange(this.value)" />
+        <div class="notify-time-group">
+          <input type="time" id="notifyTimeInput" onchange="onNotifyTimeChange(this.value)" />
+          <div class="notify-countdown" id="notifyCountdown"></div>
+        </div>
         <button class="btn-test" onclick="sendSelfNotification()">test</button>
       </div>
       <div class="home-body">
@@ -63,6 +66,7 @@
 
     <!-- REFLECTION — a single black stage; phases swap inside it -->
     <div class="screen reflect" id="reflectScreen">
+      <button class="reflect-back" id="reflectBack" onclick="goBackPhase()" title="back" style="display:none">‹</button>
       <button class="reflect-exit" onclick="exitReflection()" title="leave">✕</button>
 
       <!-- DAY-AFTER CHECK-IN -->

@@ -41,6 +41,11 @@ window._onQuestionsUpdated = () => {
   if (window._questions && window._questions.length) {
     questions = window._questions.map((q) => ({ recall: false, star: false, ...q }));
     saveLocalQuestions();
+    // don't rebuild the list while a question row is focused — that's what
+    // was closing the mobile keyboard after one character. The array is
+    // already up to date; just skip the re-render until focus moves on.
+    const active = document.activeElement;
+    if (active && active.classList && active.classList.contains("q-text")) return;
     renderQuestionEditor();
   }
 };
@@ -139,8 +144,26 @@ if ("serviceWorker" in navigator) {
 }
 
 // ---------- HOME / editor ----------
-function renderSettings() { const el = document.getElementById("notifyTimeInput"); if (el) el.value = settings.notifyTime || "20:00"; }
-window.onNotifyTimeChange = (v) => { settings.notifyTime = v; saveLocalSettings(); window._saveSettings && window._saveSettings({ notifyTime: v }); };
+function renderSettings() {
+  const el = document.getElementById("notifyTimeInput");
+  if (el) el.value = settings.notifyTime || "20:00";
+  renderNotifyLabel();
+}
+// plain-language restatement of the absolute time — not a countdown. The point
+// is a fixed sentence that sticks in memory, so any glance at a real clock
+// later is an instant match, rather than a number that's different every time.
+function renderNotifyLabel() {
+  const el = document.getElementById("notifyCountdown");
+  if (!el) return;
+  const [h, m] = (settings.notifyTime || "20:00").split(":").map(Number);
+  const d = new Date(); d.setHours(h, m, 0, 0);
+  const label = d.toLocaleTimeString(undefined, { hour: "numeric", minute: m ? "2-digit" : undefined });
+  el.textContent = "reflects at " + label;
+}
+window.onNotifyTimeChange = (v) => {
+  settings.notifyTime = v; saveLocalSettings(); renderNotifyLabel();
+  window._saveSettings && window._saveSettings({ notifyTime: v });
+};
 
 function renderQuestionEditor() {
   const list = document.getElementById("qList"); if (!list) return;
@@ -211,9 +234,28 @@ function setPhase(id) {
   document.getElementById(id).classList.add("on");
 }
 
+// subtle back button — deliberately hidden on the first phase of a session
+// (checkin, or the very first question) so there's nowhere "accidental" to
+// step back into. It only appears once there's somewhere real to undo to.
+function setBackVisible(v) {
+  const b = document.getElementById("reflectBack");
+  if (b) b.style.display = v ? "flex" : "none";
+}
+window.goBackPhase = () => {
+  if (draft.phase === "commit") {
+    const queue = activeQueue();
+    draft.phase = "question"; draft.qIndex = Math.max(0, queue.length - 1); saveDraft();
+    renderQuestion();
+  } else if (draft.phase === "question" && draft.qIndex > 0) {
+    draft.qIndex -= 1; saveDraft(); renderQuestion();
+  } else if (draft.phase === "done") {
+    enterCommit();
+  }
+};
+
 // -- check-in --
 function enterCheckin(cmt) {
-  stopVoice(); setPhase("phaseCheckin");
+  stopVoice(); setPhase("phaseCheckin"); setBackVisible(false);
   document.getElementById("checkinText").textContent = cmt.text;
   wireHold("checkinHold", "checkinRingFill", () => resolveCheckin("done"));
 }
@@ -236,6 +278,7 @@ function renderQuestion() {
   const queue = activeQueue();
   const q = queue[draft.qIndex];
   if (!q) return afterQuestions();
+  setBackVisible(draft.qIndex > 0);
 
   document.getElementById("qPhaseIndex").textContent = draft.isFullRun ? `${draft.qIndex + 1} / ${queue.length}` : "tonight";
   const qt = document.getElementById("qText"); qt.textContent = q.text;
@@ -298,7 +341,7 @@ function fillRecall(q, el) {
 
 // -- commit --
 function enterCommit() {
-  stopVoice(); draft.phase = "commit"; saveDraft(); setPhase("phaseCommit");
+  stopVoice(); draft.phase = "commit"; saveDraft(); setPhase("phaseCommit"); setBackVisible(true);
   const field = document.getElementById("commitField");
   field.value = draft.commitText || ""; autoGrow(field);
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
@@ -320,7 +363,7 @@ window.skipCommit = () => enterDone(false);
 
 // -- done --
 function enterDone(committed) {
-  stopVoice(); draft.phase = "done"; saveDraft(); setPhase("phaseDone");
+  stopVoice(); draft.phase = "done"; saveDraft(); setPhase("phaseDone"); setBackVisible(true);
   document.getElementById("doneText").textContent = committed ? "committed. see you tomorrow." : "logged. see you tomorrow.";
   const kg = document.getElementById("keepGoingBtn");
   kg.style.display = otherQuestions().length ? "block" : "none";

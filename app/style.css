@@ -45,6 +45,7 @@ body::after {
   transition: border-color .3s var(--ease), background .3s var(--ease);
 }
 .btn-ghost:hover { border-color: #35343a; background: #101012; }
+#landingScreen.on { align-items: center; justify-content: center; }
 .landing-inner .auth-logo { margin-bottom: 6px; }
 .landing-qr-wrap { margin-top: 26px; }
 .landing-qr-img { border-radius: 10px; background: #fff; padding: 12px; }
@@ -58,10 +59,12 @@ body::after {
 }
 .add-corner:hover { border-color: #35343a; color: var(--ink); }
 .top-right-cluster { position: absolute; top: calc(env(safe-area-inset-top) + 14px); right: 16px; display: flex; align-items: center; gap: 8px; z-index: 5; }
+.notify-time-group { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 input[type="time"] {
   background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: 8px;
   padding: 7px 10px; font-family: var(--mono); font-size: 13px; color-scheme: dark;
 }
+.notify-countdown { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: .02em; padding-right: 2px; }
 .btn-test { background: transparent; border: 1px solid var(--line); color: var(--ink-dim); padding: 7px 15px;
   border-radius: 8px; font-family: var(--mono); font-size: 13px; cursor: pointer; transition: color .3s, border-color .3s; }
 .btn-test:hover { color: var(--ink); border-color: #35343a; }
@@ -76,7 +79,14 @@ input[type="time"] {
 .q-row:focus-within { border-color: #34333a; }
 .q-star { background: none; border: none; color: var(--ink-faint); font-size: 16px; cursor: pointer; padding: 8px 8px 8px 2px; line-height: 1; }
 .q-star.on { color: var(--ink); }
-.q-text { flex: 1; background: none; border: none; color: var(--ink); padding: 11px 6px; font-family: var(--serif); font-size: 16px; outline: none; }
+.q-text {
+  flex: 1; min-width: 0; background: none; border: none; color: var(--ink); padding: 11px 6px;
+  font-family: var(--serif); font-size: 16px; outline: none;
+  /* long questions fade into the right edge instead of hard-clipping, so the
+     row always reads as one continuous line no matter how far you've typed */
+  -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, black 88%, transparent 100%);
+}
 .q-text::placeholder { color: var(--ink-faint); }
 .q-icons { display: flex; align-items: center; flex-shrink: 0; }
 .q-icon-btn { background: none; border: none; color: var(--ink-faint); font-size: 13px; cursor: pointer; padding: 8px; transition: color .25s; }
@@ -93,6 +103,11 @@ input[type="time"] {
 .reflect-exit { position: absolute; top: calc(env(safe-area-inset-top) + 16px); right: 18px; background: none;
   border: none; color: var(--ink-faint); font-size: 17px; cursor: pointer; z-index: 6; }
 .reflect-exit:hover { color: var(--ink-dim); }
+/* deliberately subtle — a stray tap shouldn't feel consequential, but it's
+   there for when voice mis-hears a pause and jumps you forward by accident */
+.reflect-back { position: absolute; top: calc(env(safe-area-inset-top) + 16px); left: 18px; background: none;
+  border: none; color: var(--ink-faint); font-size: 20px; cursor: pointer; z-index: 6; opacity: .55; display: flex; }
+.reflect-back:hover { opacity: 1; color: var(--ink-dim); }
 
 .phase { display: none; width: 100%; max-width: 620px; padding: 0 30px; }
 .phase.on { display: block; animation: phaseIn .55s var(--ease); }

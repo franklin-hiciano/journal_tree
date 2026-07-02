@@ -119,15 +119,22 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-window._saveQuestions = async function (list) {
+let qSaveTimer = null;
+window._saveQuestions = function (list) {
   if (!uid) return;
-  setSyncDot("syncing");
-  try {
-    await setDoc(uDoc("state", "questions"), { list, updatedAt: serverTimestamp() });
-    setSyncDot("ok");
-  } catch (e) {
-    setSyncDot("err");
-  }
+  // debounced: writing on every keystroke round-trips through the onSnapshot
+  // listener fast enough to rebuild the question list mid-type and steal focus
+  // (the mobile keyboard-closing bug). Batch rapid edits into one write.
+  clearTimeout(qSaveTimer);
+  qSaveTimer = setTimeout(async () => {
+    setSyncDot("syncing");
+    try {
+      await setDoc(uDoc("state", "questions"), { list, updatedAt: serverTimestamp() });
+      setSyncDot("ok");
+    } catch (e) {
+      setSyncDot("err");
+    }
+  }, 500);
 };
 
 window._saveSettings = async function (patch) {
