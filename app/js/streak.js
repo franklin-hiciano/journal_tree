@@ -64,3 +64,33 @@ function renderStreak() {
 
 document.addEventListener("DOMContentLoaded", renderStreak);
 renderStreak();
+
+// ── streak / help swap ──────────────────────────────────────────────────────────────
+// The streak pill stays out of the top bar entirely until the user has made at least
+// one commitment — until then the help "?" button sits in that spot instead. Once
+// unlocked (permanently — it doesn't re-lock if the streak later drops to 0), the
+// streak takes the top-bar slot and help moves to a floating button bottom-right.
+function hasEverCommitted() {
+  return (window._commitments || []).length > 0;
+}
+
+function updateStreakHelpLayout() {
+  const unlocked = hasEverCommitted();
+  const streakPill = document.getElementById("streakPill");
+  const topHelpWrap = document.querySelector(".top-bar .help-btn-wrap");
+  const helpFab = document.getElementById("helpFabBtn");
+  if (streakPill) streakPill.style.display = unlocked ? "" : "none";
+  if (topHelpWrap) topHelpWrap.style.display = unlocked ? "none" : "";
+  if (helpFab) helpFab.style.display = unlocked ? "" : "none";
+}
+
+(function () {
+  const origOnCommitmentsUpdated = window._onCommitmentsUpdated;
+  window._onCommitmentsUpdated = function () {
+    if (origOnCommitmentsUpdated) origOnCommitmentsUpdated();
+    updateStreakHelpLayout();
+  };
+})();
+
+document.addEventListener("DOMContentLoaded", updateStreakHelpLayout);
+updateStreakHelpLayout();

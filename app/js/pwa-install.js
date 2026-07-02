@@ -21,6 +21,7 @@ window.addEventListener("appinstalled", () => {
   try {
     localStorage.setItem("rc_pwa_installed", "1");
   } catch (e) {}
+  updateHabitFabVisibility();
 });
 
 function isStandalonePWA() {
@@ -30,6 +31,15 @@ function isStandalonePWA() {
     window.navigator.standalone === true
   );
 }
+
+// no point offering to install the PWA when we're already running as one
+function updateHabitFabVisibility() {
+  const fab = document.getElementById("habitFabBtn");
+  if (!fab) return;
+  fab.style.display = isStandalonePWA() ? "none" : "";
+}
+document.addEventListener("DOMContentLoaded", updateHabitFabVisibility);
+updateHabitFabVisibility();
 
 // fired by the native "Install app" button
 window._installPWA = async function () {

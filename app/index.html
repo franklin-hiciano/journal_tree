@@ -9,7 +9,7 @@
         <title>Reflect &amp; Commit</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=DM+Mono:wght@400;500&display=swap" />
         <link rel="stylesheet" href="style.css" />
         <!-- PWA -->
         <link rel="manifest" href="manifest.json" />
@@ -59,7 +59,6 @@
         <div class="noti-banner" id="notiBanner">
             <!-- phase 1: message + action -->
             <span class="noti-banner-txt" id="notiBannerStatus">Get a daily nudge to reflect.</span>
-            <button class="noti-banner-loud" id="notiBannerLoud" onclick="toggleLoudNotif()" title="loud (vibration + critical alert)">🔔</button>
             <button class="noti-banner-btn" id="notiBannerBtn" onclick="sendTestNotif()">turn on</button>
             <button class="noti-banner-x" id="notiBannerDismiss" onclick="dismissNotiBanner()">don't ask again</button>
             <!-- phase 2: time picker (shown after notification confirmed) -->
@@ -71,30 +70,48 @@
         <div class="editor" id="editor">
             <div class="top-bar">
                 <div class="brand">Reflect &amp; Commit</div>
+                <span style="flex:1"></span>
                 <div class="help-btn-wrap">
                     <button class="help-btn" id="helpBtn" onclick="window._openHelpOv()" aria-label="need help?">?</button>
                     <span class="help-tip">need help?</span>
                 </div>
-                <span style="flex:1"></span>
                 <button class="reflect-btn" onclick="attemptReflect()" title="reflect">reflect ▶</button>
-                <div class="account">
-                    <img class="auth-avatar" id="userAvatar" src="" alt="" />
-                    <span class="user-name" id="userName"></span>
-                </div>
-                <div class="streak-pill" id="streakPill" title="reflect today to start a streak">
+                <div class="streak-pill" id="streakPill" title="reflect today to start a streak" style="display:none">
                     <svg class="streak-flame" viewBox="0 0 24 24" aria-hidden="true">
                         <defs>
-                            <linearGradient id="streakFlameGrad" x1="0" y1="1" x2="0" y2="0">
-                                <stop offset="0%" stop-color="#FF9600" />
-                                <stop offset="100%" stop-color="#FFC800" />
+                            <linearGradient id="streakFlameGrad" x1="0.5" y1="1" x2="0.5" y2="0">
+                                <stop offset="0%" stop-color="#FF5C00" />
+                                <stop offset="50%" stop-color="#FF9600" />
+                                <stop offset="100%" stop-color="#FFD23E" />
+                            </linearGradient>
+                            <linearGradient id="streakFlameGradInner" x1="0.5" y1="1" x2="0.5" y2="0">
+                                <stop offset="0%" stop-color="#FFB800" />
+                                <stop offset="100%" stop-color="#FFF6D8" />
                             </linearGradient>
                         </defs>
-                        <path fill="url(#streakFlameGrad)" d="M12 2c.7 2.4-1.8 3.6-1.8 6 0 1 .5 1.8 1.3 2.3-.2-1 .2-1.9 1-2.6.2 1 .9 1.6 1.6 2.2 1.1.9 1.9 2.1 1.9 3.7 0 3.6-3 5.4-6 5.4s-6-1.8-6-5.4C4 9.8 8.6 7.4 12 2z" />
-                        <path fill="#fff" opacity=".55" d="M12.3 13.2c.4.9.1 1.9-.7 2.4-1 .6-1.6 1.6-1.6 2.7 0 1.6 1.3 2.4 2.6 2.1-1-.5-1.3-1.4-1-2.3.3.5.9.8 1.5.8 1.4 0 2.4-1.1 2.4-2.5 0-1.6-1.4-2.4-3.2-3.2z" />
+                        <path fill="url(#streakFlameGrad)" d="M12.5 1c1.3 2.9-1.1 4.6-2.4 6.9-1 1.8-1.5 3.6-.7 5.4-1.6-.6-2.6-2.1-2.7-3.8C4.9 11.2 4 13.5 4 16c0 4.4 3.6 8 8.4 8 4.9 0 8.9-3.7 8.9-8.6 0-3.6-1.7-6.5-3.9-8.5.4 1.9-.4 3.5-1.9 4.5.6-4-1.3-7.8-3-10.4z" />
+                        <path fill="url(#streakFlameGradInner)" d="M13.3 12.8c1.2 1.2 1.8 2.9 1.3 4.6-.4 1.4-1.6 2.3-1.6 3.9 0 1.1.5 1.9 1.3 2.3-2.6.4-4.8-1.4-4.8-3.9 0-1.6 1-2.5 1.5-3.9-.9.2-1.6.8-2 1.6-.3-.8-.2-1.7.2-2.5.9-1.7 2.6-1.6 4.1-2.1z" />
                     </svg>
                     <span class="streak-n">0</span>
                 </div>
-                <button class="sb-mini" onclick="doSignOut()" title="sign out">out</button>
+                <div class="account-wrap" id="accountWrap" onclick="window._toggleAccountMenu(event)">
+                    <div class="account">
+                        <img class="auth-avatar" id="userAvatar" src="" alt="" />
+                        <span class="user-name" id="userName"></span>
+                    </div>
+                    <div class="account-menu" id="accountMenu">
+                        <button onclick="doSignOut()">sign out</button>
+                    </div>
+                </div>
+            </div>
+            <div class="action-bar">
+                <div class="action-bar-tools" id="actionBarTools">
+                    <button id="btn-undo" onclick="olUndo()" title="undo (⌘Z)">↶</button>
+                    <button id="btn-redo" onclick="olRedo()" title="redo (⇧⌘Z)">↷</button>
+                    <button onclick="openHistory()" title="version history">⟲</button>
+                </div>
+                <span style="flex:1"></span>
+                <span class="pstatus" id="pst"></span>
             </div>
             <div class="edit-workspace" id="editWorkspace">
                 <div class="edit-text" id="editText">
@@ -115,16 +132,8 @@
                             <div class="hover-btns-layer" id="hoverBtnsLayer"></div>
                         </div>
                     </div>
-                    <span class="pstatus" id="pst"></span>
                 </div>
             </div>
-        </div>
-
-        <!-- BOTTOM-LEFT CLUSTER: undo / redo / history -->
-        <div class="bottom-left-cluster">
-            <button id="btn-undo" onclick="olUndo()" title="undo (⌘Z)">↶</button>
-            <button id="btn-redo" onclick="olRedo()" title="redo (⇧⌘Z)">↷</button>
-            <button onclick="openHistory()" title="version history">⟲</button>
         </div>
 
         <!-- REFLECTION SCREEN -->
@@ -300,9 +309,10 @@
             </div>
         </div>
 
-        <!-- MAKE IT A HABIT — install-PWA popup, shown after a commitment or via the FAB -->
+        <!-- MAKE IT A HABIT — install-PWA bottom sheet, shown after a commitment or via the FAB -->
         <div class="habit-ov" id="habitOv">
             <div class="habit-inner">
+                <div class="habit-handle"></div>
                 <div class="habit-title">Make it a habit</div>
                 <div class="habit-sub">An app, accessible from your home screen.</div>
 
@@ -330,27 +340,30 @@
             </div>
         </div>
 
-        <!-- MAKE IT A HABIT — manual trigger (bottom-right, always available) -->
-        <button class="habit-fab" id="habitFabBtn" onclick="window._showHabitPopup()" title="add to home screen" aria-label="add to home screen">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19">
-                <rect x="7" y="2" width="10" height="20" rx="2.2"></rect>
-                <line x1="11" y1="18.4" x2="13" y2="18.4"></line>
-            </svg>
-        </button>
+        <!-- BOTTOM-RIGHT CORNER FLOATING BUTTONS -->
+        <div class="corner-fabs" id="cornerFabs">
+            <!-- help — only shown once the streak has taken its place in the top bar -->
+            <button class="help-fab" id="helpFabBtn" onclick="window._openHelpOv()" title="need help?" aria-label="need help?" style="display:none">?</button>
+            <!-- make it a habit — manual trigger, hidden once already running as an installed PWA -->
+            <button class="habit-fab" id="habitFabBtn" onclick="window._showHabitPopup()" title="add to home screen" aria-label="add to home screen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19">
+                    <rect x="7" y="2" width="10" height="20" rx="2.2"></rect>
+                    <line x1="11" y1="18.4" x2="13" y2="18.4"></line>
+                </svg>
+            </button>
+        </div>
 
-        <!-- HELP OVERLAY -->
+        <!-- HELP SCREEN — its own full black screen. Just the callout, the video, the X. -->
         <div class="help-ov" id="helpOv">
-            <div class="help-inner">
-                <div class="help-title">How to design a good reality check</div>
-                <div class="help-video-frame">
-                    <div class="help-video-ph" id="helpVideoPh">
-                        <div class="help-play-dot"></div>
-                        <span>video coming soon</span>
-                    </div>
-                    <iframe id="helpVideoFrame" class="help-video-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="display:none"></iframe>
+            <div class="help-title">How to design a good reality check</div>
+            <div class="help-video-frame">
+                <div class="help-video-ph" id="helpVideoPh">
+                    <div class="help-play-dot"></div>
+                    <span>video coming soon</span>
                 </div>
-                <button class="help-close" id="helpCloseBtn" onclick="window._closeHelpOv()" aria-label="close">✕</button>
+                <iframe id="helpVideoFrame" class="help-video-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="display:none"></iframe>
             </div>
+            <button class="help-close" id="helpCloseBtn" onclick="window._closeHelpOv()" aria-label="close">✕</button>
         </div>
 
         <!-- UPGRADE OVERLAY -->

@@ -61,19 +61,20 @@ async function showNotif(title,opts){
   catch(e){return false;}
 }
 
-// fire the confirmation notification (also used as “test”)
+// fire the confirmation notification (also used as “test”). As soon as permission is
+// granted we confirm immediately — no waiting on the user to tap the OS notification —
+// so pressing "turn on" retries/confirms instantly instead of hanging on a second step.
 async function sendTestNotif(){
   if(!_hasNotif){refreshNotifUI();return;}
   let perm=Notification.permission;
   if(perm!=='granted'){try{perm=await Notification.requestPermission();}catch(e){perm='denied';}}
   if(perm!=='granted'){refreshNotifUI();return;}
-  await showNotif('Reflect & Commit',{
-    body:'Tap this notification to confirm.',
-    tag:'rc-confirm',requireInteraction:true
-    // no action buttons — tapping the notification body is the confirmation
+  showNotif('Reflect & Commit',{
+    body:'Notifications are on.',
+    tag:'rc-confirm'
   });
   localStorage.setItem('notif_test_sent','1');
-  refreshNotifUI();
+  confirmReminders();
 }
 
 // the user tapped the notification → reminders are confirmed working

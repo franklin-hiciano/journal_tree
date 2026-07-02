@@ -746,7 +746,7 @@ window._onSrcChange = function (write = true) {
       pst.className = "pstatus err";
     } else {
       const k = Object.keys(nodes).length;
-      pst.textContent = k ? k + (k === 1 ? " node" : " nodes") : "—";
+      pst.textContent = k ? k + (k === 1 ? " prompt" : " prompts") : "—";
       pst.className = "pstatus" + (k ? " ok" : "");
     }
   }

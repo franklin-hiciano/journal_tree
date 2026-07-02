@@ -39,3 +39,22 @@ window._closeHelpOv = function () {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") window._closeHelpOv();
 });
+
+// ── account menu: click the avatar/name to reveal "sign out" ───────────────────────
+window._toggleAccountMenu = function (e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById("accountMenu");
+  if (!menu) return;
+  const willOpen = !menu.classList.contains("open");
+  menu.classList.toggle("open", willOpen);
+  if (willOpen) {
+    setTimeout(() => {
+      document.addEventListener("click", window._closeAccountMenu, { once: true });
+    }, 0);
+  }
+};
+
+window._closeAccountMenu = function () {
+  const menu = document.getElementById("accountMenu");
+  if (menu) menu.classList.remove("open");
+};
