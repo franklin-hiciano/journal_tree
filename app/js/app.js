@@ -70,25 +70,29 @@ function ensureShape(node, isRoot) {
 }
 function normalizeTree(list) { (list || []).forEach((n) => ensureShape(n, true)); return list || []; }
 
-function indexTree(list, owner) {
+// External index — NEVER attach runtime fields (list/owner refs) onto the
+// question objects themselves. That was the earlier bug: a node's _owner
+// pointed at its parent choice node, which itself carried a _list pointing
+// back down — a genuine circular structure, so JSON.stringify(questions)
+// (every save) threw, silently killing whatever ran after it (the "+" button
+// and drag-drop both call persistQuestions() first, so they looked dead).
+let nodeIndex = new Map(); // id -> { list, i, ownerId (choice node id), exit }
+function indexTree(list, ownerId, exit) {
   list.forEach((n, i) => {
-    n._list = list; n._i = i; n._owner = owner || null;
-    if (n.type === "choice" && n.branches) n.branches.forEach((br, bi) => indexTree(br || (n.branches[bi] = []), { choice: n, exit: bi }));
+    nodeIndex.set(n.id, { list, i, ownerId: ownerId || null, exit });
+    if (n.type === "choice" && n.branches) n.branches.forEach((br, bi) => indexTree(br || (n.branches[bi] = []), n.id, bi));
   });
 }
-function reindex() { indexTree(questions, null); }
-function findNode(id, list) {
-  list = list || questions;
-  for (const n of list) {
-    if (n.id === id) return n;
-    if (n.type === "choice" && n.branches) for (const br of n.branches) { const f = findNode(id, br || []); if (f) return f; }
-  }
-  return null;
+function reindex() { nodeIndex = new Map(); indexTree(questions, null); }
+function findNode(id) {
+  const meta = nodeIndex.get(id);
+  return meta ? meta.list[meta.i] : null;
 }
 function siblingAfter(node) {
-  const list = node._list, i = node._i;
-  if (list[i + 1]) return list[i + 1];
-  if (node._owner) return siblingAfter(node._owner.choice);
+  const meta = nodeIndex.get(node.id);
+  if (!meta) return null;
+  if (meta.list[meta.i + 1]) return meta.list[meta.i + 1];
+  if (meta.ownerId) return siblingAfter(findNode(meta.ownerId));
   return null;
 }
 function computeNext(node) {
@@ -109,7 +113,11 @@ window._onQuestionsUpdated = () => {
     questions = normalizeTree(window._questions);
     saveLocalQuestions();
     const ae = document.activeElement;
-    if (ae && ae.closest && ae.closest("#qList") && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) return;
+    // skip the rebuild entirely while any control inside the editor is
+    // focused (not just text fields) — a full rebuild every ~500ms mid-edit
+    // (each keystroke round-trips through the debounced Firestore write and
+    // back through this listener) is what was reading as "flickering".
+    if (ae && ae.closest && ae.closest("#qList")) return;
     renderQuestionEditor();
   }
 };
@@ -518,7 +526,15 @@ function fillRecall(node, el) {
 // -- back --
 window.goBackPhase = () => {
   if (draft.phase === "question") { if (draft.history.length) { draft.currentId = draft.history.pop(); saveDraft(); renderChat(); } }
-  else if (draft.phase === "commit") { draft.phase = "question"; draft.currentId = draft.lastQuestionId; saveDraft(); renderChat(); }
+  else if (draft.phase === "commit") {
+    reindex();
+    // lastQuestionId should always be set on the way into commit, but fall
+    // back to the last history entry (or the top of the list) rather than
+    // silently doing nothing if it's ever missing.
+    const target = draft.lastQuestionId || draft.history[draft.history.length - 1] || (questions[0] && questions[0].id);
+    if (!target) return;
+    draft.phase = "question"; draft.currentId = target; saveDraft(); renderChat();
+  }
   else if (draft.phase === "done") { enterCommit(); }
 };
 

@@ -88,8 +88,10 @@ body::after {
 .desktop-nudge b { color: var(--ink); font-weight: 400; word-break: break-all; }
 .q-desktop-note { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); font-style: italic; padding: 2px 0; }
 .q-list { display: flex; flex-direction: column; gap: 10px; }
-.q-node { animation: nodeIn .3s var(--ease); }
-@keyframes nodeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+/* a full rebuild replaces every row, so any per-row fade replays constantly
+   and reads as flicker rather than motion — keep it, but fast and subtle */
+.q-node { animation: nodeIn .15s ease-out; }
+@keyframes nodeIn { from { opacity: 0; } to { opacity: 1; } }
 .q-node.dragging { opacity: .35; }
 .q-node.drag-over { box-shadow: inset 0 2px 0 0 var(--ink-dim); }
 .q-node.drag-over-below { box-shadow: inset 0 -2px 0 0 var(--ink-dim); }
