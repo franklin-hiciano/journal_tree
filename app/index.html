@@ -2,11 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
     <title>Reflect &amp; Commit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..600;1,8..60,300..500&family=DM+Mono:wght@300;400;500&display=swap" />
     <link rel="stylesheet" href="style.css" />
     <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#0a0a0b" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="icon" href="icons/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,63 +21,94 @@
     <div class="auth-screen" id="authScreen">
       <div class="auth-box">
         <div class="auth-logo">Reflect <span class="amp">&amp;</span> Commit</div>
-        <button class="btn-google" id="btnSignIn" onclick="doSignIn()">Continue with Google</button>
+        <button class="btn-ghost" id="btnSignIn" onclick="doSignIn()">Continue with Google</button>
       </div>
     </div>
 
-    <!-- HOME — opened from the app icon. settings / edit questions only. -->
-    <div class="screen on" id="homeScreen">
+    <!-- LANDING — shown when NOT installed as a PWA -->
+    <div class="screen" id="landingScreen">
+      <div class="landing-inner">
+        <div class="auth-logo">Reflect <span class="amp">&amp;</span> Commit</div>
+        <div class="landing-tag">one question a night. one move.</div>
+        <button class="btn-ghost" id="getStartedBtn" onclick="onGetStarted()">Get started</button>
+        <div class="landing-qr-wrap" id="landingQrWrap" style="display:none">
+          <img id="landingQrImg" class="landing-qr-img" alt="scan to install on your phone" />
+          <div class="landing-qr-sub">scan with your phone to install. mobile only — no desktop app.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME — settings + edit questions -->
+    <div class="screen" id="homeScreen">
       <button class="add-corner" onclick="addQuestion()" title="add a question">+</button>
       <div class="top-right-cluster">
         <input type="time" id="notifyTimeInput" onchange="onNotifyTimeChange(this.value)" />
         <button class="btn-test" onclick="sendSelfNotification()">test</button>
       </div>
-
-      <div class="home-section grow" style="margin-top:52px">
+      <div class="home-body">
+        <div class="home-hint">star one question — that's your minimum for the night.</div>
         <div id="qList" class="q-list"></div>
       </div>
-
-      <button class="btn-text signout-corner" onclick="doSignOut()">sign out</button>
-    </div>
-
-    <!-- LANDING — shown when NOT running as an installed PWA. Desktop: QR to
-         install on your phone. Mobile: triggers the native install prompt. -->
-    <div class="screen" id="landingScreen">
-      <div class="landing-inner">
-        <div class="auth-logo">Reflect <span class="amp">&amp;</span> Commit</div>
-        <button class="btn-google" id="getStartedBtn" onclick="onGetStarted()">Get started</button>
-        <div class="landing-qr-wrap" id="landingQrWrap" style="display:none">
-          <img id="landingQrImg" class="landing-qr-img" alt="scan to install on your phone" />
-          <div class="landing-qr-sub">scan with your phone to install — mobile only, no desktop app.</div>
-        </div>
-      </div>
+      <button class="btn-quiet signout-corner" onclick="doSignOut()">sign out</button>
     </div>
 
     <!-- NOT AVAILABLE -->
     <div class="screen" id="unavailableScreen">
       <div class="unavail-inner">
-        <div class="unavail-label">not available right now</div>
-        <div class="unavail-time">next reflection: <span id="nextAvailLabel"></span></div>
-        <button class="btn-text" onclick="goHome()">go to settings</button>
+        <div class="unavail-label">not yet</div>
+        <div class="unavail-time">next reflection <span id="nextAvailLabel"></span></div>
+        <button class="btn-quiet" onclick="goHome()">settings</button>
       </div>
     </div>
 
-    <!-- REFLECTION SCREEN — pill at the very top, nothing else -->
-    <div class="screen" id="reflectScreen">
-      <div class="reflect-black">
-        <div class="pill-wrap">
-          <div class="question-label" id="questionLabel"></div>
-          <div class="pill">
-            <input id="answerInput" class="pill-input" type="text" autocomplete="off"
-              placeholder="type your answer…" oninput="onAnswerInput(this.value)"
-              onkeydown="if(event.key==='Enter') nextCard()" />
-            <button class="pill-recall" id="recallBtn" style="display:none">↺</button>
-            <button class="pill-next" id="nextBtn" onclick="nextCard()">→</button>
-          </div>
-          <div class="recall-panel" id="recallPanel"></div>
-        </div>
+    <!-- REFLECTION — a single black stage; phases swap inside it -->
+    <div class="screen reflect" id="reflectScreen">
+      <button class="reflect-exit" onclick="exitReflection()" title="leave">✕</button>
 
-        <button class="reflect-exit" onclick="exitReflection()">✕</button>
+      <!-- DAY-AFTER CHECK-IN -->
+      <div class="phase" id="phaseCheckin">
+        <div class="checkin-kicker">yesterday you said</div>
+        <div class="checkin-text" id="checkinText"></div>
+        <button class="hold" id="checkinHold" data-label="hold — I did">
+          <svg class="hold-ring" viewBox="0 0 72 72"><circle class="hold-track" cx="36" cy="36" r="33"/><circle class="hold-fill" id="checkinRingFill" cx="36" cy="36" r="33"/></svg>
+          <span class="hold-label">hold — I did</span>
+        </button>
+        <button class="btn-shapeless" onclick="resolveCheckin('missed')">I didn't</button>
+      </div>
+
+      <!-- QUESTION (voice-first) -->
+      <div class="phase" id="phaseQuestion">
+        <div class="q-index" id="qPhaseIndex"></div>
+        <div class="q-serif" id="qText"></div>
+        <div class="answer-wrap">
+          <textarea id="answerField" class="answer-mono" rows="1" spellcheck="false"
+            autocomplete="off" placeholder=""></textarea>
+        </div>
+        <div class="listening" id="listeningDot"><span class="ld"></span><span class="lhint" id="lhint">listening — pause when you're done</span></div>
+        <button class="recall-chevron" id="recallChevron" style="display:none">
+          <span class="chev">›</span> past answers
+        </button>
+        <div class="recall-list" id="recallList"></div>
+      </div>
+
+      <!-- COMMIT -->
+      <div class="phase" id="phaseCommit">
+        <div class="commit-kicker">one move</div>
+        <textarea id="commitField" class="answer-mono commit-field" rows="1" spellcheck="false"
+          autocomplete="off" placeholder="I will…"></textarea>
+        <div class="commit-due" id="commitDue">by tomorrow</div>
+        <button class="hold" id="commitHold" data-label="hold to commit">
+          <svg class="hold-ring" viewBox="0 0 72 72"><circle class="hold-track" cx="36" cy="36" r="33"/><circle class="hold-fill" id="commitRingFill" cx="36" cy="36" r="33"/></svg>
+          <span class="hold-label">hold to commit</span>
+        </button>
+        <button class="btn-shapeless" onclick="skipCommit()">nevermind</button>
+      </div>
+
+      <!-- DONE -->
+      <div class="phase" id="phaseDone">
+        <div class="done-mark">✓</div>
+        <div class="done-text" id="doneText">committed. see you tomorrow.</div>
+        <button class="btn-shapeless" id="keepGoingBtn" onclick="keepReflecting()">keep reflecting ›</button>
       </div>
     </div>
 

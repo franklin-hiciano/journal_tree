@@ -9,9 +9,12 @@ import {
 import {
   getFirestore,
   doc,
+  collection,
   setDoc,
   getDoc,
   onSnapshot,
+  query,
+  orderBy,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { registerForPush } from "./firebase-messaging-setup.js";
@@ -34,13 +37,16 @@ const gProvider = new GoogleAuthProvider();
 let uid = null;
 
 const DEFAULT_QUESTIONS = [
-  { id: "q_" + Date.now() + "_1", text: "What did you actually do with today? Hours, not vibes.", recall: false },
-  { id: "q_" + Date.now() + "_2", text: "Did you move the thing that matters most right now?", recall: false },
-  { id: "q_" + Date.now() + "_3", text: "What did you avoid, and what were you afraid would happen?", recall: true },
+  { id: "q_" + Date.now() + "_1", text: "Did you move the thing that matters most right now?", recall: false, star: true },
+  { id: "q_" + Date.now() + "_2", text: "What did you actually do with today? Hours, not vibes.", recall: false, star: false },
+  { id: "q_" + Date.now() + "_3", text: "What did you avoid, and what were you afraid would happen?", recall: true, star: false },
 ];
 
 function uDoc(...s) {
   return doc(db, "users", uid, ...s);
+}
+function uCol(...s) {
+  return collection(db, "users", uid, ...s);
 }
 
 const setSyncDot = (s) => {
@@ -95,6 +101,15 @@ onAuthStateChanged(auth, async (user) => {
       window._onDraftUpdated && window._onDraftUpdated();
     }, () => {});
 
+    onSnapshot(query(uCol("commitments"), orderBy("createdAt", "desc")), (snap) => {
+      window._commitments = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+        createdAt: d.data().createdAt?.toDate?.()?.toISOString?.() ?? d.data().createdAt,
+      }));
+      window._onCommitmentsUpdated && window._onCommitmentsUpdated();
+    }, () => {});
+
     window._onSignedIn && window._onSignedIn();
   } else {
     uid = null;
@@ -144,6 +159,26 @@ window._saveSession = async function (session) {
   if (!uid) return;
   try {
     await setDoc(uDoc("sessions", "s_" + Date.now()), { ...session, savedAt: serverTimestamp() });
+  } catch (e) {}
+};
+
+window._addCommitment = async function (cmt) {
+  if (!uid) return null;
+  const id = "cmt_" + Date.now();
+  try {
+    await setDoc(uDoc("commitments", id), {
+      text: cmt.text || "",
+      dueDate: cmt.dueDate || "",
+      status: "active",
+      createdAt: serverTimestamp(),
+    });
+  } catch (e) {}
+  return id;
+};
+window._resolveCommitment = async function (id, status) {
+  if (!uid) return;
+  try {
+    await setDoc(uDoc("commitments", id), { status, resolvedAt: serverTimestamp() }, { merge: true });
   } catch (e) {}
 };
 
