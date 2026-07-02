@@ -88,8 +88,15 @@ body::after {
 .desktop-nudge b { color: var(--ink); font-weight: 400; word-break: break-all; }
 .q-desktop-note { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); font-style: italic; padding: 2px 0; }
 .q-list { display: flex; flex-direction: column; gap: 10px; }
+.q-node { animation: nodeIn .3s var(--ease); }
+@keyframes nodeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.q-node.dragging { opacity: .35; }
+.q-node.drag-over { box-shadow: inset 0 2px 0 0 var(--ink-dim); }
+.q-node.drag-over-below { box-shadow: inset 0 -2px 0 0 var(--ink-dim); }
 .q-row { display: flex; align-items: center; gap: 2px; border-bottom: 1px solid var(--line); padding: 4px 2px; transition: border-color .3s; }
 .q-row:focus-within { border-color: #34333a; }
+.q-drag-handle { background: none; border: none; color: var(--ink-faint); font-size: 13px; cursor: grab; padding: 8px 4px 8px 2px; letter-spacing: -2px; }
+.q-drag-handle:active { cursor: grabbing; }
 .q-star { background: none; border: none; color: var(--ink-faint); font-size: 16px; cursor: pointer; padding: 8px 8px 8px 2px; line-height: 1; }
 .q-star.on { color: var(--ink); }
 .q-text {
@@ -126,6 +133,8 @@ body::after {
 .q-branch-list .q-text { font-family: var(--serif); font-size: 15px; }
 .q-branch-add { margin-top: 4px; align-self: flex-start; background: none; border: none; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; cursor: pointer; }
 .q-branch-add:hover { color: var(--ink-dim); }
+.q-branch-compact { margin: 2px 0 6px 12px; padding: 5px 10px; font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+  border-left: 1px solid var(--line); }
 
 /* ---------- unavailable ---------- */
 .unavail-inner { margin: auto; text-align: center; }
@@ -212,8 +221,19 @@ body::after {
 /* ---------- check-in / commit shared ---------- */
 .checkin-kicker, .commit-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 16px; }
 .checkin-text { font-family: var(--serif); font-size: 25px; line-height: 1.35; margin-bottom: 34px; }
-.commit-field { font-size: 22px; margin-bottom: 10px; }
-.commit-due { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin-bottom: 34px; }
+.commit-field {
+  width: 100%; background: transparent; border: none; outline: none; resize: none; overflow: hidden;
+  color: var(--ink); font-family: var(--mono); font-weight: 300; font-size: 22px; line-height: 1.5;
+  caret-color: var(--ink); padding: 0; margin-bottom: 14px;
+}
+.commit-field::placeholder { color: var(--ink-faint); }
+.commit-due-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 34px; }
+.commit-due-label { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
+.commit-due-select {
+  background: transparent; border: 1px solid var(--line); border-radius: 7px; color: var(--ink-dim);
+  font-family: var(--mono); font-size: 12px; padding: 5px 8px; cursor: pointer; outline: none; color-scheme: dark;
+}
+.commit-due-select:hover { border-color: #35343a; color: var(--ink); }
 
 /* hold-to-confirm — monochrome ring that fills with light */
 .hold { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px;

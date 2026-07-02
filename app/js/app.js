@@ -127,6 +127,8 @@ function deviceKind() { return isPhone() ? "mobile" : "desktop"; }
 function showScreen(id) { document.querySelectorAll(".screen").forEach((s) => s.classList.remove("on")); document.getElementById(id).classList.add("on"); }
 function goHome() { stopVoice(); showScreen(isStandalone() ? "homeScreen" : "landingScreen"); }
 function isStandalone() { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; }
+// install is required on every device before use — phone AND desktop each
+// get their own install prompt the first time they sign in on that device.
 function routeAfterAuth() { showScreen(isStandalone() ? "homeScreen" : "landingScreen"); }
 function maybeOpenFromUrl() { const p = new URLSearchParams(location.search); if (p.get("reflect") === "1") { history.replaceState({}, "", location.pathname); openReflection(); } }
 
@@ -137,12 +139,10 @@ function isMobileUA() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAg
 window.onGetStarted = async () => {
   if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt = null; return; }
   document.getElementById("getStartedBtn").style.display = "none";
-  if (isMobileUA()) document.getElementById("landingManual").style.display = "block";
-  else {
-    const url = location.href.split("?")[0];
-    document.getElementById("landingQrImg").src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
-    document.getElementById("landingQrWrap").style.display = "block";
-  }
+  document.getElementById("landingManual").style.display = "block";
+  document.getElementById("landingManual").textContent = isMobileUA()
+    ? "tap ⋮ in your browser's toolbar, then Add to Home screen."
+    : "click the install icon (⊕) in your address bar, or ⋮ menu → Install Reflect & Commit.";
 };
 
 // ---------- notification window ----------
@@ -222,9 +222,16 @@ function renderQuestionEditor() {
 function buildNode(node, siblings, index, isRoot) {
   ensureShape(node, isRoot);
   const wrap = document.createElement("div"); wrap.className = "q-node" + (node.type === "choice" ? " is-choice" : "");
+  wrap.dataset.dragIndex = index;
   const row = document.createElement("div"); row.className = "q-row";
 
-  if (isRoot) {
+  if (editMode) {
+    const handle = document.createElement("button"); handle.className = "q-drag-handle"; handle.textContent = "⋮⋮"; handle.title = "drag to reorder";
+    wireDrag(handle, wrap, siblings, index);
+    row.appendChild(handle);
+  }
+
+  if (isRoot && editMode) {
     const star = document.createElement("button");
     star.className = "q-star" + (node.star ? " on" : ""); star.textContent = node.star ? "★" : "☆"; star.title = "where your minimum ends";
     star.onclick = () => { const was = node.star; questions.forEach((q) => (q.star = false)); node.star = !was; persistQuestions(); renderQuestionEditor(); };
@@ -235,22 +242,25 @@ function buildNode(node, siblings, index, isRoot) {
   input.oninput = () => { node.text = input.value; persistQuestions(); };
   row.appendChild(input);
 
-  const struct = editMode && canBranchHere(); // structural (branch) edits = desktop only
+  const struct = canBranchHere(); // structural (branch) edits = desktop only, but the icon itself is always visible there
   const icons = document.createElement("div"); icons.className = "q-icons";
-  if (editMode) {
-    icons.appendChild(iconBtn("↑", "q-move", "move up", () => moveNode(siblings, index, -1)));
-    icons.appendChild(iconBtn("↓", "q-move", "move down", () => moveNode(siblings, index, 1)));
-    if (isRoot && struct) {
-      if (node.type === "choice") icons.appendChild(iconBtn("merge", "q-split", "remove branches", () => mergeNode(node)));
-      else icons.appendChild(iconBtn("split", "q-split", "branch into two", () => splitNode(node)));
-    }
+  if (isRoot && struct) {
+    if (node.type === "choice") icons.appendChild(iconBtn("merge", "q-split", "remove branches", () => mergeNode(node)));
+    else icons.appendChild(iconBtn("split", "q-split", "branch into two", () => splitNode(node)));
   }
   icons.appendChild(iconBtn("↺", "q-recall-icon" + (node.recall ? " on" : ""), "recall past answers", () => { node.recall = !node.recall; persistQuestions(); renderQuestionEditor(); }));
-  icons.appendChild(iconBtn("✕", "q-del-icon", "remove", () => { siblings.splice(index, 1); persistQuestions(); renderQuestionEditor(); }));
+  if (editMode) icons.appendChild(iconBtn("✕", "q-del-icon", "remove", () => { siblings.splice(index, 1); persistQuestions(); renderQuestionEditor(); }));
   row.appendChild(icons);
   wrap.appendChild(row);
 
   if (node.type === "choice") {
+    if (!editMode) {
+      // compact, read-only summary outside edit mode
+      const compact = document.createElement("div"); compact.className = "q-branch-compact";
+      compact.textContent = node.options.map((o) => o.label || "…").join(" · ");
+      wrap.appendChild(compact);
+      return wrap;
+    }
     const box = document.createElement("div"); box.className = "q-branches";
 
     // options: any number of labels, each pointing at exit A or B
@@ -303,7 +313,44 @@ function buildNode(node, siblings, index, isRoot) {
   return wrap;
 }
 
-function moveNode(list, i, dir) { const j = i + dir; if (j < 0 || j >= list.length) return; const t = list[i]; list[i] = list[j]; list[j] = t; persistQuestions(); renderQuestionEditor(); }
+// drag-to-reorder: native HTML5 DnD, drag only starts from the ⋮⋮ handle
+// (dragstart is cancelled unless it originated there, so typing/clicking the
+// text field never triggers a drag). A hairline indicator shows where the
+// row will land; the array only reorders on drop, then everything fades
+// back in via the .q-node animation in CSS for a clean, non-janky settle.
+function wireDrag(handle, wrap, list, index) {
+  wrap.draggable = true;
+  wrap.addEventListener("dragstart", (e) => {
+    if (e.target !== handle) { e.preventDefault(); return; }
+    wrap.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(index));
+    window._dragList = list; window._dragFrom = index;
+  });
+  wrap.addEventListener("dragend", () => {
+    wrap.classList.remove("dragging");
+    document.querySelectorAll(".drag-over,.drag-over-below").forEach((n) => n.classList.remove("drag-over", "drag-over-below"));
+  });
+  wrap.addEventListener("dragover", (e) => {
+    if (window._dragList !== list) return;
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    const before = e.clientY - rect.top < rect.height / 2;
+    document.querySelectorAll(".drag-over,.drag-over-below").forEach((n) => n.classList.remove("drag-over", "drag-over-below"));
+    wrap.classList.add(before ? "drag-over" : "drag-over-below");
+  });
+  wrap.addEventListener("drop", (e) => {
+    e.preventDefault();
+    if (window._dragList !== list) return;
+    const from = window._dragFrom;
+    const rect = wrap.getBoundingClientRect();
+    const before = e.clientY - rect.top < rect.height / 2;
+    let to = index + (before ? 0 : 1);
+    if (to > from) to--;
+    if (from !== to) { const [moved] = list.splice(from, 1); list.splice(to, 0, moved); persistQuestions(); }
+    renderQuestionEditor();
+  });
+}
 function splitNode(node) { node.type = "choice"; node.options = [{ label: "yes", exit: 0 }, { label: "no", exit: 1 }]; node.branches = [[], []]; persistQuestions(); renderQuestionEditor(); }
 function mergeNode(node) {
   const has = (node.branches || []).some((br) => (br || []).length);
@@ -480,14 +527,25 @@ function enterCommit() {
   stopVoice(); draft.phase = "commit"; saveDraft(); setPhase("phaseCommit"); setBackVisible(true); setCollapseVisible(false);
   const field = document.getElementById("commitField");
   field.value = draft.commitText || ""; autoGrow(field);
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-  draft.commitDue = tomorrow.toISOString().slice(0, 10);
-  document.getElementById("commitDue").textContent = "by " + tomorrow.toLocaleDateString(undefined, { weekday: "long" }).toLowerCase();
   field.oninput = () => { draft.commitText = field.value; autoGrow(field); saveDraft(); };
   field.onkeydown = (e) => { if (e.key === "Enter") e.preventDefault(); };
+  renderDueSelect();
   wireHold("commitHold", "commitRingFill", doCommit);
   setTimeout(() => field.focus(), 60);
 }
+function renderDueSelect() {
+  const sel = document.getElementById("commitDueSelect"); if (!sel) return;
+  sel.innerHTML = "";
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    const opt = document.createElement("option"); opt.value = d.toISOString().slice(0, 10);
+    opt.textContent = i === 1 ? "tomorrow" : d.toLocaleDateString(undefined, { weekday: "long" }).toLowerCase();
+    sel.appendChild(opt);
+  }
+  sel.value = draft.commitDue && sel.querySelector(`option[value="${draft.commitDue}"]`) ? draft.commitDue : sel.options[0].value;
+  draft.commitDue = sel.value; saveDraft();
+}
+window.onCommitDueChange = (v) => { draft.commitDue = v; saveDraft(); };
 function doCommit() { const text = (draft.commitText || "").trim(); if (text) window._addCommitment && window._addCommitment({ text, dueDate: draft.commitDue }); if (navigator.vibrate) navigator.vibrate(12); draft.committed = true; enterDone(true); }
 window.skipCommit = () => { draft.committed = false; enterDone(false); };
 

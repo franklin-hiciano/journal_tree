@@ -113,7 +113,10 @@
         <div class="commit-kicker">one move</div>
         <textarea id="commitField" class="answer-mono commit-field" rows="1" spellcheck="false"
           autocomplete="off" placeholder="I will…"></textarea>
-        <div class="commit-due" id="commitDue">by tomorrow</div>
+        <div class="commit-due-row">
+          <span class="commit-due-label">by</span>
+          <select class="commit-due-select" id="commitDueSelect" onchange="onCommitDueChange(this.value)"></select>
+        </div>
         <button class="hold" id="commitHold" data-label="hold to commit">
           <svg class="hold-ring" viewBox="0 0 72 72"><circle class="hold-track" cx="36" cy="36" r="33"/><circle class="hold-fill" id="commitRingFill" cx="36" cy="36" r="33"/></svg>
           <span class="hold-label">hold to commit</span>
